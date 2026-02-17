@@ -44,7 +44,9 @@ class ProfileCreateController {
 
             let licensePicture = req.file.buffer;
 
-            let { location, individual, licenseExp, city, identifyingLandmark, subCity } = req.body
+            // location : { latitude , longitude }
+
+            let { location, subCity , individual, licenseExp, city, identifyingLandmark } = req.body;
 
             let result = await profileSetterServiceHandler.serviceProfile({
                 location,
@@ -63,7 +65,7 @@ class ProfileCreateController {
             }
 
 
-            return res.statu(400).json({ message: "Bad Request" })
+            return res.status(400).json({ message: "Bad Request" })
 
 
 

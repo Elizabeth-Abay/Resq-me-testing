@@ -34,6 +34,33 @@ const singleUpload = multer(
 )
 
 
-module.exports = { multiUploads, singleUpload };
+const multiEmergencySetter = multer(
+    {
+        storage
+    }
+).fields([
+    {
+        name: 'first-emergency',
+        maxCount: 1
+    },
+    {
+        name: 'second-emergency',
+        maxCount: 1
+    },
+    {
+        name: 'third-emergency',
+        maxCount: 1
+    },
+    {
+        name: 'fourth-emergency',
+        maxCount: 1
+    },
+    {
+        name: 'fifth-emergency',
+        maxCount: 1
+    }
+])
+
+module.exports = { multiUploads, singleUpload, multiEmergencySetter };
 
 

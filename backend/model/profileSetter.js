@@ -35,7 +35,7 @@ class ProfileSetModel {
 
     async profileSetUp(sentInfo) {
         try {
-            let { userId, gender, allergies, healthState , HmoEnrollId, HmoCoveragePlan, CompanyName, HmoId, idPicPath } = sentInfo;
+            let { userId, gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoId, idPicPath } = sentInfo;
 
 
             let query = `
@@ -46,7 +46,7 @@ class ProfileSetModel {
 
             let values = [userId, gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoId, idPicPath];
 
-            console.log("Values for the values " , values)
+            console.log("Values for the values ", values)
             let result = await pool.query(query, values);
 
             if (result.rowCount === 0) {
@@ -71,12 +71,25 @@ class ProfileSetModel {
 
     async providersProfileSetUp(sentInfo) {
         try {
-            let { licenseUrl, location, licenseExp, city, identifyingLandmark, subCity, individual } = sentInfo;
+            // console.log("sentInfo ", sentInfo)
+            let { licenseUrl, location, licenseExp, city, identifyingLandmark, subCity, individual, userId } = sentInfo;
 
-            let values = [location, licenseUrl, individual, licenseExp, city, identifyingLandmark, subCity , userId]
+            let { latitude, longitude } = location;
+            console.log("latitude" , latitude , "longitude" ,longitude)
+            console.log("parsed latitude" , parseFloat(latitude) , "parsed longitude" , parseFloat(longitude));
+
+
+            let values = [parseFloat(longitude), parseFloat(latitude), licenseUrl, individual, licenseExp, city, identifyingLandmark, subCity, userId]
             let query = `
                 INSERT INTO service_provider_profile(location, license_picture, is_individual_service_provider, license_expiration_date, city, identifying_landmark, sub_city, service_provider_id)
-                VALUES ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 )
+                VALUES ( 
+                
+                ST_SetSRID(
+                    ST_MakePoint($1 , $2)  , 4326
+                )::geography
+
+                ,
+                $3 , $4 , $5 , $6 , $7 , $8 , $9 )
             `
 
 

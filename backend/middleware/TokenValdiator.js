@@ -11,12 +11,13 @@ let { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;
 
 function accessValidator(req, res, next) {
     try {
-        console.log(req)
+        // console.log(req)
         let access = req.headers['authorization'].split(' ');
 
         let result = jwt.verify(access[1], ACCESS_TOKEN_SECRET);
 
         req.decodedAccess = result;
+        // console.log("Result from access decoding " , result);
         next();
     } catch (err) {
         console.log("Error while accessValidator ", err.message);

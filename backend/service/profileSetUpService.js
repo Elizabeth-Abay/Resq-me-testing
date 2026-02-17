@@ -63,11 +63,15 @@ class ProfileSetterService {
 
     async serviceProfile(sentInfo) {
         try {
-            let { licensePicture, location, licenseExp, city, identifyingLandmark, subCity, individual } = sentInfo
+            let { licensePicture, location, licenseExp, city, identifyingLandmark, subCity, individual , userId} = sentInfo
             // is_individual_service_provider 
+
+            console.log({ licensePicture, location, licenseExp, city, identifyingLandmark, subCity, individual , userId});
 
             let licenseUrl = await uploadFilesToCloud({ buffer: licensePicture, folder: 'Licencses' });
 
+            // console.log({ licenseUrl, location, licenseExp, city, identifyingLandmark, subCity, individual , userId })
+            location = JSON.parse(location)
             let result = await profileModelHandler.providersProfileSetUp(
                 { licenseUrl, location, licenseExp, city, identifyingLandmark, subCity, individual , userId }
             )
