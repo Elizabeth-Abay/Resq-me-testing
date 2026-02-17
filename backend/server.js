@@ -1,5 +1,6 @@
 const authRouter = require('./routes/AuthRoute');
 const tokenRouter = require('./routes/tokenRoute');
+const profileRouter = require('./routes/profileSetter')
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -7,7 +8,7 @@ const dotenv = require('dotenv');
 const path = require('path');
 
 dotenv.config({
-    path : path.resolve( __dirname , '../.env')
+    path: path.resolve(__dirname, '../.env')
 })
 
 const { PORT } = process.env;
@@ -15,12 +16,12 @@ const { PORT } = process.env;
 
 app.use(express.json());
 app.use(cors({
-    origin : '*'
+    origin: '*'
 }));
 app.use('/auth', authRouter);
 app.use('/token', tokenRouter);
+app.use('/profile', profileRouter)
 
-
-app.listen(PORT , () => {
+app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

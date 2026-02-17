@@ -9,9 +9,10 @@ dotenv.config(
 )
 let { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;
 
-async function accessValidator(req, res, next) {
+function accessValidator(req, res, next) {
     try {
-        let access = req.headers['authorization'].split(' f');
+        console.log(req)
+        let access = req.headers['authorization'].split(' ');
 
         let result = jwt.verify(access[1], ACCESS_TOKEN_SECRET);
 
@@ -25,7 +26,7 @@ async function accessValidator(req, res, next) {
 
 
 
-async function refreshValidator(req, res, next) {
+function refreshValidator(req, res, next) {
     try {
         let { refreshToken } = req.body;
 

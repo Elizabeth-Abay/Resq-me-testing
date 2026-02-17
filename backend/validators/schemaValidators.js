@@ -85,6 +85,7 @@ let logInSchema = Joi.object(
 )   
 
 
+
 let logOutSchema = Joi.object(
     {
         randomString : Joi.string().trim().required(),
