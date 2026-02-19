@@ -6,29 +6,36 @@ const profileModelHandler = new ProfileSetModel();
 class ProfileSetterService {
     async userProfile(sentInfo) {
         try {
-            let { userId, gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoName, frontBuffer, backBuffer } = sentInfo;
+            let {
+                userId, gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoName, profile
+                // , frontBuffer, backBuffer
+            } = sentInfo;
 
-            let frontUrl = await uploadFilesToCloud({ buffer: frontBuffer, folder: "ResqMissionIds" });
-            let backUrl = await uploadFilesToCloud({ buffer: backBuffer, folder: "ResqMissionIds" });
+            // frontUrl - for now will be the profile of the user
+            let profileUrl = await uploadFilesToCloud({ buffer: profile, folder: "User-Profile-storage" })
+            // let frontUrl = await uploadFilesToCloud({ buffer: frontBuffer, folder: "ResqMissionIds" });
+            // let backUrl = await uploadFilesToCloud({ buffer: backBuffer, folder: "ResqMissionIds" });
 
-            let idPicPath = JSON.stringify({
-                frontUrl,
-                backUrl
-            })
-
-
-            let res = await profileModelHandler.HMOSelecter(HmoName);
-
+            // let idPicPath = JSON.stringify({
+            //     frontUrl,
+            //     backUrl
+            // })
 
 
-            if (!res.success) {
-                return {
-                    success: false,
-                    reason: "HMO doesn't exist"
+            let HmoId ;
+            if (!HmoName) {
+                let res = await profileModelHandler.HMOSelecter(HmoName);
+                if (!res.success) {
+                    return {
+                        success: false,
+                        reason: "HMO doesn't exist"
+                    }
                 }
+
+                HmoId = res.HmoId;
             }
 
-            let { HmoId } = res;
+
 
             allergies = JSON.stringify(allergies);
             healthState = JSON.stringify(healthState);
@@ -37,7 +44,7 @@ class ProfileSetterService {
 
 
             let finalUpload = await profileModelHandler.profileSetUp(
-                { userId, gender, allergies, healthState , HmoEnrollId, HmoCoveragePlan, CompanyName, HmoId, idPicPath }
+                { userId, gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoId, profileUrl }
             )
 
             if (!finalUpload.success) {
@@ -63,28 +70,28 @@ class ProfileSetterService {
 
     async serviceProfile(sentInfo) {
         try {
-            let { licensePicture, location, licenseExp, city, identifyingLandmark, subCity, individual , userId} = sentInfo
+            let { licensePicture, location, licenseExp, city, identifyingLandmark, subCity, individual, userId } = sentInfo
             // is_individual_service_provider 
 
-            console.log({ licensePicture, location, licenseExp, city, identifyingLandmark, subCity, individual , userId});
+            console.log({ licensePicture, location, licenseExp, city, identifyingLandmark, subCity, individual, userId });
 
             let licenseUrl = await uploadFilesToCloud({ buffer: licensePicture, folder: 'Licencses' });
 
             // console.log({ licenseUrl, location, licenseExp, city, identifyingLandmark, subCity, individual , userId })
             location = JSON.parse(location)
             let result = await profileModelHandler.providersProfileSetUp(
-                { licenseUrl, location, licenseExp, city, identifyingLandmark, subCity, individual , userId }
+                { licenseUrl, location, licenseExp, city, identifyingLandmark, subCity, individual, userId }
             )
 
-            if (result.success){
+            if (result.success) {
                 return {
-                    success : true
+                    success: true
                 }
             }
 
             return {
-                success : false,
-                reason : "Database problem"
+                success: false,
+                reason: "Database problem"
             }
 
         } catch (err) {

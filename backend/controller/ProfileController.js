@@ -6,8 +6,9 @@ class ProfileCreateController {
     async userProfile(req, res) {
         try {
             let { userId } = req.decodedAccess;
-            let frontBuffer = req.files.front[0].buffer;
-            let backBuffer = req.files.back[0].buffer;
+            let profile = req.files.profilePic[0].buffer;
+            // let frontBuffer = req.files.front[0].buffer;
+            // let backBuffer = req.files.back[0].buffer;
 
             let { gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoName } = req.body;
 
@@ -21,8 +22,9 @@ class ProfileCreateController {
                 HmoCoveragePlan,
                 CompanyName,
                 HmoName,
-                frontBuffer,
-                backBuffer
+                profile
+                // frontBuffer,
+                // backBuffer
             });
 
             if (result.success) {
@@ -46,7 +48,7 @@ class ProfileCreateController {
 
             // location : { latitude , longitude }
 
-            let { location, subCity , individual, licenseExp, city, identifyingLandmark } = req.body;
+            let { location, subCity, individual, licenseExp, city, identifyingLandmark } = req.body;
 
             let result = await profileSetterServiceHandler.serviceProfile({
                 location,

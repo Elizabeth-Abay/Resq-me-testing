@@ -48,13 +48,13 @@ class AuthModelHandler {
             }
         }
     }
-    async emailPhoneUniqueCheck(sentInfo) {
+    async emailPhoneDeviceIdUniqueCheck(sentInfo) {
         try {
             // to grasp early on the email and phone uniqueness before otp generation
-            let { email, phone } = sentInfo;
+            let { email, phone , deviceIdentifier } = sentInfo;
 
-            let query = `SELECT * FROM verified_users WHERE email = $1 OR phone_number = $2`;
-            let values = [email, phone];
+            let query = `SELECT * FROM verified_users WHERE email = $1 OR phone_number = $2 OR deviceIdentifier = $3`;
+            let values = [email, phone , deviceIdentifier];
 
             let result = await pool.query(query, values);
 
@@ -78,14 +78,14 @@ class AuthModelHandler {
 
     async signUp(sentInfo) {
         try {
-            const { deviceIdentifier, fullname, email, phone, otpHashed, passwordHashed, emailStringHashed, role } = sentInfo;
+            const { deviceIdentifier, fullname, email, phone, otpHashed, passwordHashed, emailStringHashed, role , birthDate } = sentInfo;
 
             // EXCLUDED - means the row u tried to insert
             // , phone_number , deviceIdentifier ?? - how can u include this too
             const query = `
                 INSERT INTO 
-                pending_users (deviceIdentifier, fullname, email, phone_number, otp_hashed, password_hashed , email_verification_token_hashed , userRole) 
-                VALUES ($1, $2, $3, $4, $5, $6 , $7 , $8)
+                pending_users (deviceIdentifier, fullname, email, phone_number, otp_hashed, password_hashed , email_verification_token_hashed , userRole , birthDate) 
+                VALUES ($1, $2, $3, $4, $5, $6 , $7 , $8 , $9)
                 ON CONFLICT (email)
                 DO UPDATE SET
                     fullname = EXCLUDED.fullname ,
@@ -95,9 +95,10 @@ class AuthModelHandler {
                     password_hashed = EXCLUDED.password_hashed ,
                     email_verification_token_hashed = EXCLUDED.email_verification_token_hashed ,
                     userRole = EXCLUDED.userRole,
-                    deviceIdentifier = EXCLUDED.deviceIdentifier
+                    deviceIdentifier = EXCLUDED.deviceIdentifier,
+                    birthDate = EXCLUDED.birthDate
                 RETURNING id`;
-            const values = [deviceIdentifier, fullname, email, phone, otpHashed, passwordHashed, emailStringHashed, role];
+            const values = [deviceIdentifier, fullname, email, phone, otpHashed, passwordHashed, emailStringHashed, role , birthDate];
 
             let result = await pool.query(query, values);
 
@@ -121,35 +122,35 @@ class AuthModelHandler {
     }
 
 
-    async otpVerification(pendingUserId) {
-        try {
-            const query = `SELECT otp_hashed , userRole FROM pending_users WHERE id = $1`;
-            const values = [pendingUserId];
-            let result = await pool.query(query, values);
-            if (result.rows.length > 0) {
-                let { otp_hashed, userrole } = result.rows[0];
-                return {
-                    success: true,
-                    data: {
-                        otpHashed: otp_hashed,
-                        role: userrole
-                    }
-                }
-            }
-            return {
-                success: false
-            }
-        } catch (err) {
-            if (err.code === '23505') {
-                // this error code is for unique violation, which means that either email or phone number is already in use
-                console.log("Email or phone number or device already in use ", err.detail);
-            }
-            console.log("Error in AuthModelHandler.otpVerification  ", err.message)
-            return {
-                success: false
-            }
-        }
-    }
+    // async otpVerification(pendingUserId) {
+    //     try {
+    //         const query = `SELECT otp_hashed , userRole FROM pending_users WHERE id = $1`;
+    //         const values = [pendingUserId];
+    //         let result = await pool.query(query, values);
+    //         if (result.rows.length > 0) {
+    //             let { otp_hashed, userrole } = result.rows[0];
+    //             return {
+    //                 success: true,
+    //                 data: {
+    //                     otpHashed: otp_hashed,
+    //                     role: userrole
+    //                 }
+    //             }
+    //         }
+    //         return {
+    //             success: false
+    //         }
+    //     } catch (err) {
+    //         if (err.code === '23505') {
+    //             // this error code is for unique violation, which means that either email or phone number is already in use
+    //             console.log("Email or phone number or device already in use ", err.detail);
+    //         }
+    //         console.log("Error in AuthModelHandler.otpVerification  ", err.message)
+    //         return {
+    //             success: false
+    //         }
+    //     }
+    // }
 
 
     async emailVerification(sentInfo) {
@@ -217,29 +218,29 @@ class AuthModelHandler {
     }
 
 
-    async resendOtp(sentInfo) {
-        try {
-            const { otpHashed, userId } = sentInfo;
-            const query = `UPDATE pending_users SET otp_hashed = $1 WHERE id = $2 RETURNING phone_number`;
-            const values = [otpHashed, userId];
-            let result = await pool.query(query, values);
+    // async resendOtp(sentInfo) {
+    //     try {
+    //         const { otpHashed, userId } = sentInfo;
+    //         const query = `UPDATE pending_users SET otp_hashed = $1 WHERE id = $2 RETURNING phone_number`;
+    //         const values = [otpHashed, userId];
+    //         let result = await pool.query(query, values);
 
-            if (result.rows.length > 0) {
-                return {
-                    success: true,
-                    phone: result.rows[0].phone_number
-                }
-            }
-            return {
-                success: false
-            }
-        } catch (err) {
-            console.log("Error in AuthModelHandler.resendOtp  ", err.message)
-            return {
-                success: false
-            }
-        }
-    }
+    //         if (result.rows.length > 0) {
+    //             return {
+    //                 success: true,
+    //                 phone: result.rows[0].phone_number
+    //             }
+    //         }
+    //         return {
+    //             success: false
+    //         }
+    //     } catch (err) {
+    //         console.log("Error in AuthModelHandler.resendOtp  ", err.message)
+    //         return {
+    //             success: false
+    //         }
+    //     }
+    // }
 
 
     async resendEmailVerification(sentInfo) {

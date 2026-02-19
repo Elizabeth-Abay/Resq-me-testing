@@ -35,16 +35,18 @@ class ProfileSetModel {
 
     async profileSetUp(sentInfo) {
         try {
-            let { userId, gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoId, idPicPath } = sentInfo;
+            let { userId, gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoId, profileUrl
+                // idPicPath 
+            } = sentInfo;
 
 
             let query = `
-                INSERT INTO user_profile(user_id ,gender ,allergies,health_state ,Hmo_enroll_id ,Hmo_plan  ,Company_name ,HMO_info , id_picture_path)
-                VALUES ($1 , $2 , $3::jsonb , $4::jsonb ,$5 ,$6 , $7 , $8 , $9 )
+                INSERT INTO user_profile(user_id ,gender ,allergies,health_state ,Hmo_enroll_id ,Hmo_plan  ,Company_name ,HMO_info , id_picture_path , profile)
+                VALUES ($1 , $2 , $3::jsonb , $4::jsonb ,$5 ,$6 , $7 , $8 , $9 , $10 )
                 RETURNING id
             `;
 
-            let values = [userId, gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoId, idPicPath];
+            let values = [userId, gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoId, idPicPath , profileUrl];
 
             console.log("Values for the values ", values)
             let result = await pool.query(query, values);

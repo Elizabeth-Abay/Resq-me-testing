@@ -5,7 +5,8 @@ let signUpServiceHandler = new SignUpServiceHandler();
 class AuthController {
     async signUp(req, res) {
         try {
-            let { fullname, email, phone, password, deviceIdentifier , role} = req.validatedBody;
+            console.log(req.validatedBody , "is this req.validatedBody")
+            let { fullname, email, phone, password, deviceIdentifier , role , birthDate} = req.validatedBody;
 
             let result = await signUpServiceHandler.signUp({
                 fullname,
@@ -13,7 +14,8 @@ class AuthController {
                 phone,
                 password,
                 deviceIdentifier,
-                role
+                role,
+                birthDate
             });
             if (result.success) {
                 return res.status(200).json(result.data);
@@ -27,20 +29,20 @@ class AuthController {
     }
 
 
-    async validateOtp(req, res) {
-        try {
-            let { userId, otp } = req.validatedBody;
-            let result = await signUpServiceHandler.validateOtp({ userId, otp });
-            if (result.success) {
-                return res.status(200).json(result.data);
-            } else {
-                return res.status(400).json(result);
-            }
-        } catch (err) {
-            console.log("Error while AuthController.validateOtp ", err.message);
-            return res.status(500).json({ message: "Internal Server Error" });
-        }
-    }
+    // async validateOtp(req, res) {
+    //     try {
+    //         let { userId, otp } = req.validatedBody;
+    //         let result = await signUpServiceHandler.validateOtp({ userId, otp });
+    //         if (result.success) {
+    //             return res.status(200).json(result.data);
+    //         } else {
+    //             return res.status(400).json(result);
+    //         }
+    //     } catch (err) {
+    //         console.log("Error while AuthController.validateOtp ", err.message);
+    //         return res.status(500).json({ message: "Internal Server Error" });
+    //     }
+    // }
 
     async validateEmail(req, res) {
         try {
@@ -60,21 +62,21 @@ class AuthController {
         }
     }
 
-    async resendOtp(req, res) {
-        try {
-            let { userId } = req.validatedParams;
-            let result = await signUpServiceHandler.resendOtp(userId);
+    // async resendOtp(req, res) {
+    //     try {
+    //         let { userId } = req.validatedParams;
+    //         let result = await signUpServiceHandler.resendOtp(userId);
 
-            if (result.success) {
-                return res.status(200).json({ message: "OTP resent successfully" });
-            } else {
-                return res.status(400).json(result);
-            }
-        } catch (err) {
-            console.log("Error while AuthController.resendOtp ", err.message);
-            return res.status(500).json({ message: "Internal Server Error" });
-        }
-    }
+    //         if (result.success) {
+    //             return res.status(200).json({ message: "OTP resent successfully" });
+    //         } else {
+    //             return res.status(400).json(result);
+    //         }
+    //     } catch (err) {
+    //         console.log("Error while AuthController.resendOtp ", err.message);
+    //         return res.status(500).json({ message: "Internal Server Error" });
+    //     }
+    // }
 
 
     async resendEmailVerificationLink(req, res) {

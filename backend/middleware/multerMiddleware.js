@@ -17,6 +17,10 @@ const multiUploads = multer({
     {
         name: 'back',
         maxCount: 1
+    },
+    {
+        name : 'profilePic',
+        maxCount : 1
     }
 
 ])

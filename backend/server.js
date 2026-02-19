@@ -25,3 +25,5 @@ app.use('/profile', profileRouter)
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
+// we need to have a route that only service providers can have so that they will be able to list who they are partnering with 

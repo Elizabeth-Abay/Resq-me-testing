@@ -13,8 +13,8 @@ let logInValidator = valiatoreCreator(logInSchema);
 
 module.exports = {
     signUpInputValidator,
-    otpInputValidator,
-    resendOtpValidator,
+    // otpInputValidator,
+    // resendOtpValidator,
     logOutValidator,
     emailInputValidator,
     resendEmailValidator,

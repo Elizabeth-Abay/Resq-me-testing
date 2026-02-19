@@ -23,7 +23,7 @@ class AuthService {
             // send the messages or email including links
 
 
-            let { fullname, email, phone, password, deviceIdentifier, role } = sentInfo;
+            let { fullname, email, phone, password, deviceIdentifier, role , birthDate } = sentInfo;
             let otpHashed, otp, emailString, emailStringHashed;
             let passwordHashed = await bcryptHasher(password);
 
@@ -52,14 +52,14 @@ class AuthService {
                 }
             }
 
-            let emailPhoneUniqueCheckResult = await authModelHandler.emailPhoneUniqueCheck({ email, phone });
+            let emailPhoneUniqueCheckResult = await authModelHandler.emailPhoneDeviceIdUniqueCheck({ email, phone , deviceIdentifier});
 
             if (!emailPhoneUniqueCheckResult.success) {
                 // means not unique
-                console.log("Email or phone number already in use  for user email ", email, " ", phone);
+                console.log("Email or phone number or deviceId already in use  for user email ", email, " ", phone);
                 return {
                     success: false,
-                    reason: "Email or phone number already in use"
+                    reason: "Email or phone number or deviceId already in use"
                 }
             }
 
@@ -72,7 +72,8 @@ class AuthService {
                     passwordHashed,
                     emailStringHashed,
                     deviceIdentifier,
-                    role
+                    role,
+                    birthDate
                 }
             )
 
@@ -131,60 +132,60 @@ class AuthService {
         }
     }
 
-    async validateOtp(sentInfo) {
-        try {
-            let { userId, otp } = sentInfo;
-            let otpHashedUser = cryptoHasher(otp);
+    // async validateOtp(sentInfo) {
+    //     try {
+    //         let { userId, otp } = sentInfo;
+    //         let otpHashedUser = cryptoHasher(otp);
 
-            let userFromDb = await authModelHandler.otpVerification(userId);
+    //         let userFromDb = await authModelHandler.otpVerification(userId);
 
-            if (!userFromDb.success) {
-                return {
-                    success: false,
-                    reason: "Error while verifying otp"
-                }
-            }
+    //         if (!userFromDb.success) {
+    //             return {
+    //                 success: false,
+    //                 reason: "Error while verifying otp"
+    //             }
+    //         }
 
-            let { otpHashed, role } = userFromDb.data;
-
-
-
-            if (otpHashedUser.trim() !== otpHashed.trim()) {
-                return {
-                    success: false,
-                    reason: "Verification failed bc of tampered otp"
-                }
-            }
+    //         let { otpHashed, role } = userFromDb.data;
 
 
 
-            // then generate access and refresh tokens
-            let { accessToken } = tokenGenerationServiceHandler.accessTokenGenerator({ userId, role });
-            let refreshTokenResult = await tokenGenerationServiceHandler.refreshTokenGenerator({ userId, role });
+    //         if (otpHashedUser.trim() !== otpHashed.trim()) {
+    //             return {
+    //                 success: false,
+    //                 reason: "Verification failed bc of tampered otp"
+    //             }
+    //         }
 
-            if (!refreshTokenResult.success) {
-                return {
-                    success: false,
-                    reason: "Error while generating refresh token"
-                }
-            }
 
-            let { refreshToken } = refreshTokenResult;
-            return {
-                success: true,
-                data: {
-                    accessToken,
-                    refreshToken
-                }
-            }
 
-        } catch (err) {
-            console.log('Error while AuthService.validateOtp ', err.message);
-            return {
-                success: false
-            }
-        }
-    }
+    //         // then generate access and refresh tokens
+    //         let { accessToken } = tokenGenerationServiceHandler.accessTokenGenerator({ userId, role });
+    //         let refreshTokenResult = await tokenGenerationServiceHandler.refreshTokenGenerator({ userId, role });
+
+    //         if (!refreshTokenResult.success) {
+    //             return {
+    //                 success: false,
+    //                 reason: "Error while generating refresh token"
+    //             }
+    //         }
+
+    //         let { refreshToken } = refreshTokenResult;
+    //         return {
+    //             success: true,
+    //             data: {
+    //                 accessToken,
+    //                 refreshToken
+    //             }
+    //         }
+
+    //     } catch (err) {
+    //         console.log('Error while AuthService.validateOtp ', err.message);
+    //         return {
+    //             success: false
+    //         }
+    //     }
+    // }
 
     async validateEmailLink(sentInfo) {
         try {
@@ -250,44 +251,44 @@ class AuthService {
         }
     }
 
-    async resendOtp(userId) {
-        try {
-            // regenerate and send otp
-            let otp = otpGenerator();
-            console.log("OTP generated ", otp);
-            let otpHashed = cryptoHasher(otp);
+    // async resendOtp(userId) {
+    //     try {
+    //         // regenerate and send otp
+    //         let otp = otpGenerator();
+    //         console.log("OTP generated ", otp);
+    //         let otpHashed = cryptoHasher(otp);
 
-            let result = await authModelHandler.resendOtp({ otpHashed, userId })
+    //         let result = await authModelHandler.resendOtp({ otpHashed, userId })
 
-            if (!result.success) {
-                return {
-                    success: false,
-                    reason: "Error while updating info in pending users resend sms"
-                }
-            };
+    //         if (!result.success) {
+    //             return {
+    //                 success: false,
+    //                 reason: "Error while updating info in pending users resend sms"
+    //             }
+    //         };
 
-            let phone = result.phone;
-            let res = await smsMessageSending({ phone, otp })
+    //         let phone = result.phone;
+    //         let res = await smsMessageSending({ phone, otp })
 
-            if (!res.success) {
-                return {
-                    success: false,
-                    reason: "Sms sending problem"
-                }
-            };
+    //         if (!res.success) {
+    //             return {
+    //                 success: false,
+    //                 reason: "Sms sending problem"
+    //             }
+    //         };
 
-            return {
-                success: true
-            }
+    //         return {
+    //             success: true
+    //         }
 
 
-        } catch (err) {
-            console.log("Error while AuthService.resendOtp ", err.message);
-            return {
-                success: false
-            }
-        }
-    }
+    //     } catch (err) {
+    //         console.log("Error while AuthService.resendOtp ", err.message);
+    //         return {
+    //             success: false
+    //         }
+    //     }
+    // }
 
 
     async resendEmail(userId) {
