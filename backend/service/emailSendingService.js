@@ -11,7 +11,7 @@ let { EMAIL } = process.env;
 async function emailSendingService(sentInfo) {
     try {
         const { email, emailString, userId } = sentInfo;
-        let emailLink = `http://localhost:3000/auth/verify-email?userId=${userId}&tokenString=${emailString}`;
+        let emailLink = `https://resq-app-741m.onrender.com/auth/verify-email?userId=${userId}&tokenString=${emailString}`;
 
 
         console.log("Sent email link", emailLink);
