@@ -18,7 +18,8 @@ let emailTransporter = nodeMailer.createTransport({
         pass: EMAIL_PASSWORD // is the password for the app to be able to send 
         // emails through the provided email not ur actual email password
     },
-    tls: { rejectUnauthorized: false } // bypass certificate validation  for development only reverse this once through dev't
+    tls: { rejectUnauthorized: false } ,// bypass certificate validation  for development only reverse this once through dev't,
+    family: 4
 })
 
 
