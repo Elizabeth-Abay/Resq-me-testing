@@ -22,7 +22,8 @@
     "nodemailer": "^8.0.1",
     "otp-generator": "^4.0.1",
     "pg": "^8.18.0",
-    "twilio": "^5.12.1"
+    "twilio": "^5.12.1",
+    "resend": "^3.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.11",
