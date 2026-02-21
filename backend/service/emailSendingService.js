@@ -1,4 +1,4 @@
-const emailTransporter = require('../config/nodeMailerConfig');
+const sendEmail = require('../utils/emailSender');
 const dotenv = require('dotenv');   
 const path = require('path');
 
@@ -13,15 +13,15 @@ async function emailSendingService(sentInfo) {
         const { email, emailString , userId } = sentInfo;
         let emailLink = `http://localhost:3000/auth/verify-email?userId=${userId}&tokenString=${emailString}`;
         
-        let mailOptions = {
-            from: EMAIL,
-            to: email,
+        
+        console.log("Sent email link" , emailLink);
+        // { to, subject, html }
+
+        let info = await sendEmail({
+            to : email,
             subject: "Verify your email",
             html: `<p>Click on the link to verify your email: <a href="${emailLink}">Verify Email</a></p>`
-        };
-        console.log("Sent email link" , emailLink);
-
-        let info = await emailTransporter.sendMail(mailOptions);
+        });
 
         if (info.accepted.length > 0) {
             console.log("Email sent successfully to ", email);
