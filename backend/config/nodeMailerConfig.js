@@ -11,8 +11,8 @@ let { EMAIL, EMAIL_PASSWORD } = process.env;
 
 let emailTransporter = nodeMailer.createTransport({
     host: 'smtp.gmail.com', // means the emails i send live here 
-    port: 587, // use this port to send out the emails
-    secure: false,
+    port: 465, // use this port to send out the emails
+    secure: true,
     auth: {
         user: EMAIL,
         pass: EMAIL_PASSWORD // is the password for the app to be able to send 
