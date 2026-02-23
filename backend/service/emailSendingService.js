@@ -44,4 +44,34 @@ async function emailSendingService(sentInfo) {
 }
 
 
-module.exports = emailSendingService;
+
+async function notificationEmailConstructor({ email, userName, serviceProviderInfo }) {
+    let html = `
+        <h3>Hello</h3> 
+        <h4><p> We want to notify you that ${userName} has been reported to an accident. Help is on the way and the patient will first be admitted to ${serviceProviderInfo}</p></h4
+    `
+    
+    let subject = "Notifying Accident";
+
+    let emailSending = await sendEmail({
+        to : email,
+        subject,
+        html
+    })
+
+    if (!emailSending){
+        return {
+            success : false
+        }
+    }
+
+    return {
+        success : true
+    }
+
+    
+
+}
+
+
+module.exports = emailSendingService , notificationEmailConstructor;
