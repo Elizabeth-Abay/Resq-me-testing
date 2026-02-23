@@ -1,3 +1,4 @@
+const { date } = require('joi');
 const pool = require('../config/pgConnection');
 
 
@@ -126,4 +127,71 @@ class EmergencyDealerModel {
 }
 
 
-module.exports = EmergencyDealerModel;
+class EmergencyReportMaker {
+    async healthProfileSelector(userId) {
+        try {
+            let query = `
+            SELECT  gender , health_state , allergies , consent_to_share_information_ai FROM user_profile WHERE user_id = $1
+            `;
+
+            let values = [userId];
+
+            let result = await pool.query(query, values);
+
+
+            if (result.rowCount === 0) {
+                return {
+                    success: false,
+                    reason: "Problem while fetching health profile from users"
+                }
+            }
+
+            return {
+                success: true,
+                data: result.rows[0]
+            }
+
+        } catch (err) {
+            console.log("Error while EmergencyReportMaker.healthProfileSelector ", err.message);
+            return {
+                success: false,
+                reason: "Error while EmergencyReportMaker.healthProfileSelector"
+            }
+        }
+    }
+
+    async createAReport(sentInfo) {
+        try {
+            let { userId, severity, longitude, latitude, reason } = sentInfo;
+            let query = `
+                INSERT INTO emergency_report(reporter_id ,severity_scale ,reporter_current_location ,reason_for_severity_scaling)
+                VALUES ($1 , $2 , ST_SetSRID(ST_MakePoint($3, $4), 4326)::geography , $5)
+            `
+
+            let values = [userId, severity, longitude, latitude, reason];
+
+            let result = await pool.query(query, values);
+
+            if (result.rowCount === 0) {
+                return {
+                    success: false,
+                    reason: "Error while inserting emergency report"
+                }
+            }
+
+            return {
+                success: true
+            }
+
+        } catch (err) {
+            console.log("Error while EmergencyReportMaker.createAReport ", err.message);
+            return {
+                success: false,
+                reason: "Error while EmergencyReportMaker.createAReport"
+            }
+        }
+    }
+}
+
+
+module.exports = { EmergencyDealerModel, EmergencyReportMaker }; 

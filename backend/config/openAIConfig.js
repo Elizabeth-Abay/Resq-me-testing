@@ -1,4 +1,4 @@
-const OpenAI = require('openai');
+const { OpenAI } = require('openai');
 const dotenv = require('dotenv');
 const path = require('path');
 
@@ -11,5 +11,6 @@ let { OPEN_AI_API_KEY } = process.env;
 const openai = new OpenAI({
     apiKey: OPEN_AI_API_KEY
 });
+
 
 module.exports = openai;

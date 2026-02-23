@@ -1,13 +1,79 @@
-const EmergencyDealerModel = require('../model/emergencyReport');
+const { EmergencyDealerModel, EmergencyReportMaker } = require('../model/emergencyReport');
 const notificationEmailConstructor = require('./emailSendingService');
+const transcribeAudio = require('./voiceTranscription');
+const calculatePriorityCorrection = require('./resultCorrection');
 
 let emergencyDealerModel = new EmergencyDealerModel();
+let emergencyReportMaker = new EmergencyReportMaker();
 
 
 class ReportEmergency {
+    async makeRequest(sentInfo) {
+        try {
+            let { userId, latitude, longitude, audioBuffer } = sentInfo;
+
+            // first transcribe
+            if (audioBuffer) {
+                let sentToAI = await this.sendToAI({ audioBuffer, userId });
+
+                if (!sentToAI.success){
+                    return {
+                        success : false,
+                        reason : "Error while sending to ai microservice"
+                    }
+                }
+
+                // see the ai thing
+            }
+
+
+
+        } catch (Err) {
+            console.log("Error while ReportEmergency.makeRequest", Err.message);
+            return {
+                success: false,
+                reason: "Error while ReportEmergency.makeRequest"
+            }
+        }
+    }
     // send to ai, put into correction , put into table , go on to select the service providers , notify them 
     async sendToAI(sentInfo) {
         try {
+            let { audioBuffer, userId } = sentInfo;
+            // audioBuffer is the data stream
+            let sentPayload = {};
+
+            let result = await transcribeAudio(audioBuffer);
+
+            if (!result.success) {
+                return {
+                    success: false,
+                    reason: "Error while transcribing the voice"
+                }
+            }
+
+            sentPayload.voice = result.data;
+
+            // and check consent to share with ai
+            let consent = await emergencyReportMaker.healthProfileSelector(userId);
+
+            if (!consent.success) {
+                return {
+                    success: false,
+                    reason: "Error while fetching the health profile"
+                }
+            }
+
+            let { data } = consent;
+
+            if (data.consent_to_share_information_ai) {
+                // then add it to payload
+                sentPayload.gender = data.gender,
+                    sentPayload.healthInformatuion = data.health_state,
+                    sentPayload.allergies = data.allergies
+            }
+
+            // then do a post request to the ai end point to microservice ai
 
 
         } catch (Err) {
@@ -19,23 +85,20 @@ class ReportEmergency {
         }
     }
 
-    async putIntoCorrection(sentInfo) {
-        try {
-            // if more than 1 patient < 4
-            // if patient's health info is critical like blood pressure ... then high risk < 4
-            // can we send the ai information about the people health
 
-        } catch (Err) {
-            console.log("Error while ReportEmergency.putIntoCorrection ", Err.message);
-            return {
-                success: false,
-                reason: "Error while ReportEmergency.putIntoCorrection "
-            }
-        }
-    }
 
     async putIntoTable(sentInfo) {
         try {
+            let { voiceRecord, userId, location } = sentInfo;
+
+            // transcribe the voice and contact ai
+            // correct the suggested input
+            // then put into table 
+
+
+            // notify the nearby providers via an emitted event
+
+
 
         } catch (Err) {
             console.log("Error while ReportEmergency.putIntoTable ", Err.message);
@@ -171,3 +234,5 @@ class EmergencyDealerService {
 
 
 }
+
+module.exports = { ReportEmergency, EmergencyDealerService }
