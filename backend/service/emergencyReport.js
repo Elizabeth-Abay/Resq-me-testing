@@ -2,12 +2,14 @@ const { EmergencyDealerModel, EmergencyReportMaker } = require('../model/emergen
 const notificationEmailConstructor = require('./emailSendingService');
 const transcribeAudio = require('./voiceTranscription');
 const calculatePriorityCorrection = require('./resultCorrection');
+const { AwsContextImpl } = require('twilio/lib/rest/accounts/v1/credential/aws');
+
 
 let emergencyDealerModel = new EmergencyDealerModel();
 let emergencyReportMaker = new EmergencyReportMaker();
 
 
-class ReportEmergency {
+class ReportEmergency{
     async makeRequest(sentInfo) {
         try {
             let { userId, latitude, longitude, audioBuffer } = sentInfo;
@@ -16,14 +18,32 @@ class ReportEmergency {
             if (audioBuffer) {
                 let sentToAI = await this.sendToAI({ audioBuffer, userId });
 
-                if (!sentToAI.success){
+                if (!sentToAI.success) {
                     return {
-                        success : false,
-                        reason : "Error while sending to ai microservice"
+                        success: false,
+                        reason: "Error while sending to ai microservice"
                     }
                 }
 
                 // see the ai thing
+                let { severity, recommended_action, priority_level } = sentToAI;
+
+
+                let puttingIntoTable = await this.putIntoTable({ severity, userId, latitude, longitude });
+
+                if (puttingIntoTable.success){
+                    return {
+                        success : true
+                    }
+                    // then there will be a notification from the data base end
+                }
+
+                return {
+                    success : false,
+                    reason : "Error while putting info into a report table"
+                }
+
+
             }
 
 
@@ -89,17 +109,23 @@ class ReportEmergency {
 
     async putIntoTable(sentInfo) {
         try {
-            let { voiceRecord, userId, location } = sentInfo;
+            let { severity, userId, latitude, longitude } = sentInfo;
+            // { userId, severity, longitude, latitude}
 
-            // transcribe the voice and contact ai
-            // correct the suggested input
-            // then put into table 
+            let placingIntoRequest = await emergencyReportMaker.createAReport({ severity, userId, latitude, longitude });
 
+            if (!placingIntoRequest.success) {
+                return {
+                    success: false,
+                    reason: "Error while emergencyReportMaker.createAReport"
+                }
+            }
 
-            // notify the nearby providers via an emitted event
+            // emit an event to notify near by people
 
-
-
+            return {
+                success: true
+            }
         } catch (Err) {
             console.log("Error while ReportEmergency.putIntoTable ", Err.message);
             return {

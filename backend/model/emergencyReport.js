@@ -162,13 +162,9 @@ class EmergencyReportMaker {
 
     async createAReport(sentInfo) {
         try {
-            let { userId, severity, longitude, latitude, reason } = sentInfo;
-            let query = `
-                INSERT INTO emergency_report(reporter_id ,severity_scale ,reporter_current_location ,reason_for_severity_scaling)
-                VALUES ($1 , $2 , ST_SetSRID(ST_MakePoint($3, $4), 4326)::geography , $5)
-            `
-
-            let values = [userId, severity, longitude, latitude, reason];
+            let { userId, severity, longitude, latitude} = sentInfo;
+            let query = `SELECT * FROM  creating_a_report($1 , $2 , $3, $4)`
+            let values = [userId, severity, longitude, latitude];
 
             let result = await pool.query(query, values);
 
