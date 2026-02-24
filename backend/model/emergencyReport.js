@@ -38,21 +38,28 @@ class EmergencyDealerModel {
     }
 
 
-    async emergencyContactSelector(requestId) {
+    async emergencyContactAndEmailedInfo(requestId) {
         try {
             // do a join between the request table and emergecny contact table
+            // we need the information of the service provider
+
+
             let query = `
-                SELECT ec.email , v_u.fullname FROM  emergency_contacts ec
-                INNER JOIN emergency_report er
-                ON er.reporter_id = ec.patient_id
-                JOIN verified_users v_u
-                ON ec.patient_id = v_u.id
+                SELECT ec.email , v_u.fullname , spp.city , spp.sub_city , spp.identifying_landmark  
+                FROM  emergency_report er 
+                INNER JOIN verified_users v_u
+                ON er.reporter_id = v_u.id
+                LEFT JOIN emergency_contacts ec
+                ON v_u.id = ec.patient_id
+                INNER JOIN service_provider_profile spp
+                ON spp.service_provider_id = er.accepted_by
                 WHERE er.id = $1
             `
 
             let values = [requestId];
 
             let res = await pool.query(query, values);
+
 
             if (res.rowCount === 0) {
                 return {
@@ -62,9 +69,25 @@ class EmergencyDealerModel {
             }
 
 
+            let { fullname, city, sub_city, identifying_landmark } = result.rows[0];
+            // structuring the input properly
+            let emails = result.rows
+                .map(row => row.email)
+                .filter(email => email !== null);
+
+
+            let payLoad = {
+                fullname, 
+                city, 
+                sub_city, 
+                identifying_landmark,
+                emails
+            }
+
+
             return {
                 success: true,
-                data: res.rows
+                data: payLoad
             }
 
         } catch (err) {
@@ -162,7 +185,7 @@ class EmergencyReportMaker {
 
     async createAReport(sentInfo) {
         try {
-            let { userId, severity, longitude, latitude} = sentInfo;
+            let { userId, severity, longitude, latitude } = sentInfo;
             let query = `SELECT * FROM  creating_a_report($1 , $2 , $3, $4)`
             let values = [userId, severity, longitude, latitude];
 

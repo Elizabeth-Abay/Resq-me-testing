@@ -28,3 +28,6 @@ class ReportHandler {
         }
     }
 }
+
+
+module.exports = ReportHandler;

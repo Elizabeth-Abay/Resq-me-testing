@@ -1,14 +1,14 @@
 const EmergencyNotificationModel = require('../model/pgConnectionListener');
-const { contactServiceProviders } = require('./emailSendingService');
+const { contactServiceProviders, notificationEmailConstructor } = require('./emailSendingService');
+const EmergencyContactSetterModel = require('../model/emergencyContactModel');
+const { EmergencyDealerModel, EmergencyReportMaker } = require('../model/emergencyReport');
 const EventEmitter = require('events'); // bc it needs to send email notification to emergency contacts
-// const dotenv = require('dotenv');
-// const path = require('path');
+// this will be triggered once the pg emits notifications for the request
 
-// dotenv.config({
-//     path: path.resolve(__dirname, '../../.env')
-// });
 
 const emergencyNotificationModelHandler = new EmergencyNotificationModel();
+const emergencyContactSetterModelHandler = new EmergencyContactSetterModel();
+const emergencyDealerHandler = new EmergencyDealerModel();
 
 class EmergencyNotificationService extends EventEmitter {
     constructor() {
@@ -17,6 +17,8 @@ class EmergencyNotificationService extends EventEmitter {
 
     async processEmergencyRequest(emergencyData) {
         try {
+            // used to select the service providers nearby
+            // and also send emails automatically to the service providers
             // emergencyData - the payload from the pg notification
             // this will be called to process the notification emitted by postgresql
             let { latitude, longitude, allergies, health_state } = emergencyData;
@@ -57,14 +59,16 @@ class EmergencyNotificationService extends EventEmitter {
                 }
             });
 
-            if (successful === 0){
+            if (successful === 0) {
                 return {
-                    success : false
+                    success: false
                 }
             }
 
             // but if even one provider is communicated properly
-            // send the email to the contact 
+            return {
+                success: true
+            }
 
 
         } catch (error) {
@@ -92,18 +96,18 @@ class EmergencyNotificationService extends EventEmitter {
             };
 
             // send emails to providers
-            let emailSending = await contactServiceProviders({email, payload});
+            let emailSending = await contactServiceProviders({ email, payload });
 
 
-            if (!emailSending.success){
+            if (!emailSending.success) {
                 return {
-                    success : false
+                    success: false
                 }
             }
 
 
             return {
-                success : true
+                success: true
             };
 
         } catch (error) {
@@ -113,19 +117,41 @@ class EmergencyNotificationService extends EventEmitter {
     }
 
 
-    async contactEmergencyContacts(userId){
-        try{
+    async contactEmergencyContacts({ userId, serviceProviderId }) {
+        try {
             // this will be done once the report has been accepted
             // when the providers click the link then it will include the report id
             // them clicking - check if accepted if not and accept if it is
             // when they accept then contact them 
-
-            let result = await
-
+            // do a get request- inside there will be the id of the request
 
 
-        } catch (err){
-             // Log failed contact attempt
+            let result = await emergencyDealerHandler.emergencyContactAndEmailedInfo(requestId);
+
+
+            if (!result.success) {
+                return {
+                    success: false
+                }
+            }
+
+            if (result.success && result.data.length === 0) {
+                return {
+                    // bc it is not the query that failed but the user didn't provide emergency contacts
+                    success: true
+                }
+            }
+
+
+            let { fullname, city, sub_city, identifying_landmark, emails } = result.data;
+
+            
+
+
+
+
+        } catch (err) {
+            // Log failed contact attempt
             await this.logProviderContact(provider.id, emergencyData.emergency_id, 'failed', error.message);
 
             console.error(`Failed to contact provider ${provider.id}:`, error.message);

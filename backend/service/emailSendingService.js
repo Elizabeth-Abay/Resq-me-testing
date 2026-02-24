@@ -1,12 +1,6 @@
 const sendEmail = require('../utils/emailSender');
-const dotenv = require('dotenv');
-const path = require('path');
 
-dotenv.config({
-    path: path.resolve(__dirname, '../../.env')
-});
 
-let { EMAIL } = process.env;
 
 async function emailSendingService(sentInfo) {
     try {
@@ -45,28 +39,55 @@ async function emailSendingService(sentInfo) {
 
 
 
-async function notificationEmailConstructor({ email, userName, serviceProviderInfo }) {
-    let html = `
-        <h3>Hello</h3> 
-        <h4><p> We want to notify you that ${userName} has been reported to an accident. Help is on the way and the patient will first be admitted to ${serviceProviderInfo}</p></h4
-    `
+async function notificationEmailConstructor({ email, fullname, city, sub_city, identifying_landmark }) {
+    try {
+        let html = `
+        <div style="font-family: Arial, sans-serif; border: 2px solid #e74c3c; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #e74c3c; margin-top: 0;">🚨 Emergency Status Update</h2>
+            
+            <p>This is an automated alert from <strong>ResQMission</strong>.</p>
+            
+            <p>We are notifying you that <strong>${fullname}</strong> was involved in an emergency situation. Professional medical help has arrived and is currently assisting them.</p>
+            
+            <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #3498db; margin: 20px 0;">
+                <p style="margin: 0;"><strong>Medical Facility/Location:</strong></p>
+                <p style="margin: 5px 0;">${city}, ${sub_city}</p>
+                <p style="margin: 5px 0;"><em>Note: Near ${identifying_landmark}</em></p>
+                <br>
+            </div>
 
-    let subject = "Notifying Accident";
+            <p style="font-size: 0.9em; color: #555;">
+                <strong>Next Steps:</strong> You may attempt to contact ${fullname}'s primary phone or proceed to the location mentioned above. Please stay calm and keep this line open for further updates.
+            </p>
+            
+            <hr style="border: 0; border-top: 1px solid #eee;">
+            <p style="font-size: 0.8em; color: #888;">Sent via ResQMission Emergency Response System.</p>
+        </div>
+        `;
 
-    let emailSending = await sendEmail({
-        to: email,
-        subject,
-        html
-    })
+        let subject = "Notifying Accident";
 
-    if (!emailSending) {
+        let emailSending = await sendEmail({
+            to: email,
+            subject,
+            html
+        })
+
+        if (!emailSending) {
+            return {
+                success: false
+            }
+        }
+
+        return {
+            success: true
+        }
+
+    } catch (err) {
+        console.log("Error in notificationEmailConstructor ", err.message);
         return {
             success: false
         }
-    }
-
-    return {
-        success: true
     }
 }
 
@@ -117,4 +138,4 @@ async function contactServiceProviders(sentInfo) {
 
 }
 
-module.exports = { emailSendingService, notificationEmailConstructor , contactServiceProviders };
+module.exports = { emailSendingService, notificationEmailConstructor, contactServiceProviders };
