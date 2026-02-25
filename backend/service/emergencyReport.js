@@ -3,13 +3,21 @@ const notificationEmailConstructor = require('./emailSendingService');
 const transcribeAudio = require('./voiceTranscription');
 const calculatePriorityCorrection = require('./resultCorrection');
 const { AwsContextImpl } = require('twilio/lib/rest/accounts/v1/credential/aws');
+const dotenv = require('dotenv');
+const path = require('path');
+
+dotenv.config({
+    path: path.resolve(__dirname, '../../.env')
+})
+
+const { MODEL_URL } = process.env;
 
 
 let emergencyDealerModel = new EmergencyDealerModel();
 let emergencyReportMaker = new EmergencyReportMaker();
 
 
-class ReportEmergency{
+class ReportEmergency {
     async makeRequest(sentInfo) {
         try {
             let { userId, latitude, longitude, audioBuffer } = sentInfo;
@@ -26,21 +34,21 @@ class ReportEmergency{
                 }
 
                 // see the ai thing
-                let { severity, recommended_action, priority_level } = sentToAI;
+                let { severity, recommended_action, priority_level } = sentToAI.data;
 
 
                 let puttingIntoTable = await this.putIntoTable({ severity, userId, latitude, longitude });
 
-                if (puttingIntoTable.success){
+                if (puttingIntoTable.success) {
                     return {
-                        success : true
+                        success: true
                     }
                     // then there will be a notification from the data base end
                 }
 
                 return {
-                    success : false,
-                    reason : "Error while putting info into a report table"
+                    success: false,
+                    reason: "Error while putting info into a report table"
                 }
 
 
@@ -72,7 +80,7 @@ class ReportEmergency{
                 }
             }
 
-            sentPayload.voice = result.data;
+            sentPayload.message = result.data;
 
             // and check consent to share with ai
             let consent = await emergencyReportMaker.healthProfileSelector(userId);
@@ -94,8 +102,30 @@ class ReportEmergency{
             }
 
             // then do a post request to the ai end point to microservice ai
+            let aiMessage = await fetch(
+                MODEL_URL,
+                {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(sentPayload)
+                }
+            )
 
+            let aiResponse = await aiMessage.json();
+            console.log("AI Response: ", aiResponse);
 
+            if (aiResponse.error === ""){
+                return {
+                    success : true,
+                    data : aiResponse
+                }
+            }
+
+            return {
+                success : false
+            }
         } catch (Err) {
             console.log("Error while ReportEmergency.sendToAI ", Err.message);
             return {

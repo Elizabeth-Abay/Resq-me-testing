@@ -18,6 +18,8 @@ class ProfileCreateController {
                 gender,
                 allergies,
                 healthState,
+                // includes bloodType , 
+                // diabetes ,
                 HmoEnrollId,
                 HmoCoveragePlan,
                 CompanyName,

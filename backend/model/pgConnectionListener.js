@@ -1,17 +1,8 @@
 const notificationPool = require('../config/pgNotificationConn');
 const EventEmitter = require('events');
-// --Calculate distance
-// ST_Distance(
-//     sp.location,
-//     ST_SetSRID(ST_MakePoint($1, $2), 4326):: geography
-// ) / 1000 as distance_km
-//                 FROM service_provider_profile sp
-//                 JOIN verified_users vu ON sp.service_provider_id = vu.id
-//                 WHERE ST_DWithin(
-//     sp.location,
-//     ST_SetSRID(ST_MakePoint($1, $2), 4326):: geography,
-//     $3 * 1000
-// )  isnt this repeated
+
+
+
 
 
 class EmergencyNotificationModel extends EventEmitter {
@@ -122,7 +113,6 @@ class EmergencyNotificationModel extends EventEmitter {
 
             // service providers profile
             let data = result.rows.map(row => ({
-                id: row.id,
                 userId: row.user_id,
                 name: row.fullname,
                 phone: row.phone_number,
@@ -207,4 +197,6 @@ class EmergencyNotificationModel extends EventEmitter {
 
 
 
-module.exports = EmergencyNotificationModel;
+const EmergencyNotificationHandlerObj = new EmergencyNotificationModel();
+
+module.exports = EmergencyNotificationHandlerObj;

@@ -82,6 +82,7 @@ class EmergencyDealerModel {
                 sub_city, 
                 identifying_landmark,
                 emails
+                // emails = [ of emails to contact]
             }
 
 

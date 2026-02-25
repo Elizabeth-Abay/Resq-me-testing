@@ -1,4 +1,4 @@
-const EmergencyNotificationModel = require('../model/pgConnectionListener');
+const EmergencyNotificationHandlerObj = require('../model/pgConnectionListener');
 const { contactServiceProviders, notificationEmailConstructor } = require('./emailSendingService');
 const EmergencyContactSetterModel = require('../model/emergencyContactModel');
 const { EmergencyDealerModel, EmergencyReportMaker } = require('../model/emergencyReport');
@@ -6,13 +6,13 @@ const EventEmitter = require('events'); // bc it needs to send email notificatio
 // this will be triggered once the pg emits notifications for the request
 
 
-const emergencyNotificationModelHandler = new EmergencyNotificationModel();
 const emergencyContactSetterModelHandler = new EmergencyContactSetterModel();
 const emergencyDealerHandler = new EmergencyDealerModel();
 
 class EmergencyNotificationService extends EventEmitter {
     constructor() {
-        super()
+        super();
+        // this.on()
     };
 
     async processEmergencyRequest(emergencyData) {
@@ -21,21 +21,25 @@ class EmergencyNotificationService extends EventEmitter {
             // and also send emails automatically to the service providers
             // emergencyData - the payload from the pg notification
             // this will be called to process the notification emitted by postgresql
-            let { latitude, longitude, allergies, health_state } = emergencyData;
+            let { latitude, longitude, allergies, health_state , emergency_id} = emergencyData;
+
             console.log(`Processing emergency request ${emergencyData.emergency_id}`);
 
             let searchRadiusKm = 5;
             // first find nearby 5 km providers
             // Find nearby service providers
-            let nearbyProviders = await emergencyNotificationModelHandler.findNearbyProviders({ latitude, longitude, searchRadiusKm });
+            let nearbyProviders = await EmergencyNotificationHandlerObj.findNearbyProviders({ latitude, longitude, searchRadiusKm });
 
             if (nearbyProviders.success && nearbyProviders.data.length === 0) {
                 // try by increasing the radius
                 searchRadiusKm = 15;
-                nearbyProviders = await emergencyNotificationModelHandler.findNearbyProviders({ latitude, longitude, searchRadiusKm });
+                nearbyProviders = await EmergencyNotificationHandlerObj.findNearbyProviders({ latitude, longitude, searchRadiusKm });
             }
 
             console.log(`Found ${nearbyProviders.length} nearby providers`);
+
+
+            // decoding the location information in here 
 
             // Contact each provider
             const contactPromises = nearbyProviders.data.map(provider =>
@@ -81,17 +85,20 @@ class EmergencyNotificationService extends EventEmitter {
 
     async contactProvider(provider, emergencyData) {
         try {
-            let { latitude, longitude, allergies, health_state } = emergencyData;
-            let { email, distanceKm } = provider;
+            let { location , allergies, health_state ,  emergency_id } = emergencyData;
+            let { email, distanceKm , userId } = provider;
+            let providerId = userId;
 
             // decode the location for the service providers here
 
             const payload = {
-                location: "Textual description of the lat and long explained",
+                emergency_id,
+                providerId,
+                location,
+                //  "Textual description of the lat and long explained",
                 healthState: health_state,
                 allergies: allergies,
-                urgencyLevel: urgency_level,
-                distanceKm: distanceKm,
+                distanceKm ,
                 timestamp: new Date().toISOString()
             };
 
@@ -117,7 +124,8 @@ class EmergencyNotificationService extends EventEmitter {
     }
 
 
-    async contactEmergencyContacts({ userId, serviceProviderId }) {
+    // when the users click the link i sent to the email then accepted means like we need to contact the emergency contacts
+    async contactEmergencyContacts(requestId) {
         try {
             // this will be done once the report has been accepted
             // when the providers click the link then it will include the report id
@@ -145,7 +153,7 @@ class EmergencyNotificationService extends EventEmitter {
 
             let { fullname, city, sub_city, identifying_landmark, emails } = result.data;
 
-            
+            let sendingEmergencyEmails = await 
 
 
 

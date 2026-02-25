@@ -97,16 +97,17 @@ async function contactServiceProviders(sentInfo) {
     try {
         let { email, payload } = sentInfo;
 
-        let { location, healthState, allergies, urgencyLevel, distanceKm } = payload;
+        let { location, healthState, allergies, distanceKm ,  emergency_id , providerId} = payload;
 
         // create acceptance link
-        let acceptanceLink = ``;
-        // have a link in there to accept the notification   
+        let acceptanceLink = `http://localhost:3000/report/accept?report_id=${emergency_id}&provider_id=${providerId}`;
+        // have a link in there to accept the notification 
+        // we need the report id and the provider's id  
         let html = `
             <h2> A patient is located at ${location} and their health state is
             ${healthState}.</h2>
-            <h2>The patient have got this allergies ${allergies}.
-            It is predicted their level is ${urgencyLevel}. 
+            <h2>The patient have got allergies ${allergies}.
+            It is predicted their level is medium or critical. 
             The patient is located at ${distanceKm} away from your head location.
             To accept the patient's admittance 
             <a href = ${acceptanceLink}> click this link</a> .</h2>

@@ -7,9 +7,11 @@ const bcryptCompare = require('../utils/bcryptCompare');
 const emailSendingService = require('./emailSendingService');
 const smsMessageSending = require('./smsMessageSending');
 const TokenGenerationServiceHandler = require('./tokenGenerationService');
+const FetchAndUpdatePpService = require('../service/profileUpdateService');
 
 let authModelHandler = new AuthModelHandler();
 let tokenGenerationServiceHandler = new TokenGenerationServiceHandler();
+let fetchingProfileOnLogIn = new FetchAndUpdatePpService();
 
 class AuthService {
     async signUp(sentInfo) {
@@ -425,11 +427,18 @@ class AuthService {
             }
 
             let { refreshToken } = refreshTokenResult;
+
+            let userProfile = await fetchingProfileOnLogIn.fetchMyProfile(id);
+
+            if (!userProfile.success){
+                console.log("The user is not found in profile");
+            }
             return {
                 success: true,
                 data: {
                     accessToken,
-                    refreshToken
+                    refreshToken,
+                    profile : userProfile.data
                 }
             }
         } catch (err) {
