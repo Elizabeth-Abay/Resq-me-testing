@@ -9,7 +9,7 @@ const tokenModel = require('../../backend/model/tokenModel');
 
 dotenv.config(
     {
-        path: path.resolve(__dirname, '../../.env')
+        path: path.join(__dirname, '../../.env')
     }
 )
 

@@ -2,7 +2,7 @@ const path = require('path');
 const dotenv = require('dotenv');
 
 dotenv.config({
-    path: path.resolve(__dirname, '../../.env')
+    path: path.join(__dirname, '../../.env')
 });
 
 let { EMAIL_SENDING_URL, EMAIL, EMAIL_SENDING_API_KEY } = process.env;

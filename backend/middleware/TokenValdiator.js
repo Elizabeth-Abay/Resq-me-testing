@@ -4,7 +4,7 @@ const path = require('path');
 
 dotenv.config(
     {
-        path: path.resolve(__dirname, '../../.env')
+        path: path.join(__dirname, '../../.env')
     }
 )
 let { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;
