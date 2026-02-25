@@ -39,35 +39,54 @@ class EmergencyNotificationModel extends EventEmitter {
             }
         }
 
-        try {
-            await this.listener.query('LISTEN emergency_happened');
-            this.isRunning = true;
-            console.log('Listening for emergency requests...');
+        const listenWithRetry = async () => {
+            try {
+                await this.listener.query('LISTEN emergency_happened');
+                this.isRunning = true;
+                console.log('Listening for emergency requests...');
 
-            this.listener.on('notification', async (msg) => {
-                try {
-                    // only a single channel to have been notified
-                    const payload = JSON.parse(msg.payload);
-                    // 'emergency_id', 'allergies','health_state','latitude','longitude'
-                    console.log('Received emergency notification:', payload);
+                this.listener.on('notification', async (msg) => {
+                    try {
+                        // only a single channel to have been notified
+                        const payload = JSON.parse(msg.payload);
+                        // 'emergency_id', 'allergies','health_state','latitude','longitude'
+                        console.log('Received emergency notification:', payload);
 
+                        this.emit('emergency_request_made', payload);
+                        // event listener bridges inputted info and service layer's task next 
 
-                    this.emit('emergency_request_made', payload);
-                    // event listener bridges the inputted info and the service layer's task next 
+                    } catch (error) {
+                        console.error('Error processing notification:', error);
+                        
+                    }
+                });
 
-                } catch (error) {
-                    console.error('Error processing notification:', error);
-                    
+            } catch (error) {
+                console.error('Failed to start listening, retrying in 5 seconds:', error.message);
+                this.isRunning = false;
+                
+                // Try to reconnect
+                setTimeout(async () => {
+                    try {
+                        if (this.listener) {
+                            await this.listener.release();
+                        }
+                        this.listener = await pool.connect();
+                        await listenWithRetry();
+                    } catch (reconnectError) {
+                        console.error('Reconnection failed:', reconnectError.message);
+                        setTimeout(listenWithRetry, 5000);
+                    }
+                }, 5000);
+                
+                return {
+                    success: false,
+                    reason: "Failed to start listening, will retry"
                 }
-            });
-
-        } catch (error) {
-            console.error('Failed to start listening:', error.message);
-            return {
-                success: false,
-                reason: "Failed to start listening:"
             }
-        }
+        };
+
+        return await listenWithRetry();
     }
 
 

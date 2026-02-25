@@ -33,24 +33,21 @@ class EmergencyNotificationService {
                 nearbyProviders = await serviceProviderHandler.findNearbyProviders({ latitude, longitude, searchRadiusKm });
             }
 
-            console.log(`Found ${nearbyProviders.length} nearby providers`);
+            console.log(`Found ${nearbyProviders.data.length} nearby providers`);
 
+            // decoding location information in here 
+            let locationDecoded = await getAddressFromCoords(latitude, longitude);
 
-            console.log("Location from the decoded latitude and longitude ", location);
-
-            if (!location.success) {
-                return {
-                    success: false,
-                    reason: "Couldn't reverse decode the latitude and longitude"
-                }
+            if (!locationDecoded.success) {
+                console.log("Location decode failed, using coordinates directly");
+                locationDecoded = { data: `Latitude: ${latitude}, Longitude: ${longitude}` };
             }
 
-
-            // decoding the location information in here 
+            console.log("Location from decoded latitude and longitude ", locationDecoded.data);
 
             // Contact each provider
             const contactPromises = nearbyProviders.data.map(provider =>
-                this.contactProvider(provider, emergencyData)
+                this.contactProvider(provider, emergencyData, locationDecoded.data)
                 // { location, healthState, allergies, distanceKm, emergency_id, providerId }
                 // providerInfo = { userId , name ,phone,email,city , subCity , landmark , distanceKm}
             );
@@ -65,48 +62,48 @@ class EmergencyNotificationService {
             results.forEach((result, index) => {
                 if (result.status === 'fulfilled') {
                     successful++;
-                    console.log(`Successfully contacted provider ${nearbyProviders[index].id}`);
+                    console.log(`Successfully contacted provider ${nearbyProviders.data[index].id}`);
                 } else {
-                    console.error(`Failed to contact provider ${nearbyProviders[index].id}:`, result.reason);
+                    console.error(`Failed to contact provider ${nearbyProviders.data[index].id}:`, result.reason);
                 }
             });
 
             if (successful === 0) {
                 return {
-                    success: false
+                    success: false,
+                    reason: "Failed to contact any providers"
                 }
             }
 
             // but if even one provider is communicated properly
             return {
-                success: true
+                success: true,
+                message: `Successfully contacted ${successful} out of ${nearbyProviders.data.length} providers`
             }
 
 
         } catch (error) {
             console.error('Error processing emergency request:', error);
-            this.emit('error', error);
+            return {
+                success: false,
+                reason: "Error processing emergency request"
+            }
         }
     }
 
 
 
-    async contactProvider(provider, emergencyData) {
+    async contactProvider(provider, emergencyData, location) {
         try {
             let { latitude, longitude, allergies, health_state, emergency_id } = emergencyData;
             let { email, distanceKm, userId } = provider;
             let providerId = userId;
 
-            // call the decoder here 
-            let locationDecoded = await getAddressFromCoords(latitude, longitude);
-
-            // decode the location for the service providers here
-
             const payload = {
                 emergency_id,
                 providerId,
-                location: locationDecoded,
-                //  "Textual description of the lat and long explained",
+                location: location,
+                //  "Textual description of lat and long explained",
                 healthState: health_state,
                 allergies: allergies,
                 distanceKm,
@@ -122,7 +119,6 @@ class EmergencyNotificationService {
                     success: false
                 }
             }
-
 
             return {
                 success: true

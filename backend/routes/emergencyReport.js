@@ -9,7 +9,7 @@ const reportHandler = new ReportHandler();
 const reportRouter = express.Router();
 
 
-reportRouter.post('/emergency', accessValidator , singleUpload, reportHandler.reportNow);
+reportRouter.post('/emergency', accessValidator , singleUpload.single('voiceNote') , reportHandler.reportNow);
 reportRouter.get('/accept-request' , reportHandler.acceptRequest );
 
 

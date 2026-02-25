@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = requrire('dotenv');
+const dotenv = require('dotenv');
 const path = require('path');
 
 
@@ -26,7 +26,7 @@ app.use(express.json());
 
 // Routes - This is where your /api/reports lives
 app.use('/reports', reportRoute);
-app.use('/user' , authRouter);
+app.use('/auth' , authRouter);
 app.use('/profile' ,profileRelated );
 app.use('/token' , tokenRoute);
 

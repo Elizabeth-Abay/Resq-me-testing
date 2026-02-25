@@ -8,17 +8,19 @@ async function emailSendingService(sentInfo) {
         let emailLink = `https://resq-app-741m.onrender.com/auth/verify-email?userId=${userId}&tokenString=${emailString}`;
 
 
-        console.log("Sent email link", emailLink);
+        console.log("Sent email link bla bla bla", emailLink);
         // { to, subject, html }
 
         let info = await sendRenderedEmail({
             to: { email },
             subject: "Verify your email",
-            templateName: 'authEmail.ejs',
+            templateName: 'authEmail',
             payload: {
                 emailLink
             }
         });
+
+        console.log(info)
 
         if (!info.success) {
             return {
@@ -54,7 +56,7 @@ async function notificationEmailConstructor({ emails, fullname, city, sub_city, 
         let payload = { fullname, city, sub_city, identifying_landmark }
 
         let emailSending = await sendRenderedEmail({
-            templateName: 'notifyEmergContacts.ejs',
+            templateName: 'notifyEmergContacts',
             to: emails,
             // emails = [ { email }]
             subject,
@@ -84,33 +86,51 @@ async function notificationEmailConstructor({ emails, fullname, city, sub_city, 
 async function contactServiceProviders(sentInfo) {
     try {
         let { email, payload } = sentInfo;
-        // { location, healthState, allergies, distanceKm, emergency_id, providerId } = payload;
-
+        let { location, healthState, allergies, distanceKm ,  emergency_id , providerId} = payload;
 
         // create acceptance link
         let acceptanceLink = `http://localhost:3000/report/accept?report_id=${emergency_id}&provider_id=${providerId}`;
+        // have a link in there to accept the notification 
+        // we need to report id and provider's id  
+        
 
-        payload.acceptanceLink = acceptanceLink;
+        let attempts = 0;
+        const maxAttempts = 3;
+        
+        while (attempts < maxAttempts) {
+            try {
+                let emailSending = await sendRenderedEmail({
+                    to: email,
+                    subject: "Emergency Report",
+                    templateName : "notifyProvider",
+                    payload : {
+                        location : location || "unknown", 
+                        healthState : healthState || {}, 
+                        allergies : Array.isArray(allergies) ? allergies : [], 
+                        distanceKm : distanceKm || "unknown",
+                        acceptanceLink
+                    }
+                });
 
-
-
-
-        let emailSending = await sendRenderedEmail({
-            to: { email },
-            subject: "Emergency Report",
-            templateName: 'notifyProvider.ejs',
-            payload
-        })
-
-        if (!emailSending) {
-            return {
-                success: false
+                if (emailSending) {
+                    console.log(`Email sent successfully to ${email} on attempt ${attempts + 1}`);
+                    return { success: true };
+                }
+            } catch (error) {
+                attempts++;
+                console.log(`Email attempt ${attempts} failed for ${email}:`, error.message);
+                
+                if (attempts >= maxAttempts) {
+                    console.log(`Failed to send to ${email} after ${maxAttempts} attempts`);
+                    return { success: false, reason: "Email delivery failed after retries" };
+                }
+                
+                // Wait before retry: 1s, 2s, 3s
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
             }
         }
 
-        return {
-            success: true
-        }
+        return { success: false, reason: "Email delivery failed" };
 
     } catch (err) {
         console.log("Error while contactServiceProviders ", err.message);
