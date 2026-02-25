@@ -1,5 +1,5 @@
 // this model is about setting up the channel to listen to notifications
-const pool = require('../../backend-start/config/pgConnection');
+const pool = require('../config/pgConnection');
 const EventEmitter = require('events');
 
 
@@ -48,6 +48,7 @@ class EmergencyNotificationModel extends EventEmitter {
                 try {
                     // only a single channel to have been notified
                     const payload = JSON.parse(msg.payload);
+                    // 'emergency_id', 'allergies','health_state','latitude','longitude'
                     console.log('Received emergency notification:', payload);
 
 

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Email</title>
+</head>
+
+<body>
+    <div
+        style="max-width: 600px; margin: 0 auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+        <div style="background-color: #3498db; padding: 20px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Welcome to ResQMission</h1>
+        </div>
+
+        <div style="padding: 40px; text-align: center; color: #333333;">
+            <h2 style="margin-top: 0;">Verify Your Email Address</h2>
+            <p style="font-size: 16px; line-height: 1.5; color: #666666;">
+                Thank you for joining our emergency response network. To get started and ensure your account is secure,
+                please click the button below to verify your email.
+            </p>
+
+            <div style="margin: 30px 0;">
+                <a href="<%= emailLink %>"
+                    style="background-color: #2ecc71; color: white; padding: 14px 28px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-size: 16px;">
+                    Verify Email Address
+                </a>
+            </div>
+
+            <p style="font-size: 12px; color: #999999; line-height: 1.4;">
+                If the button doesn't work, copy and paste this link into your browser:<br>
+                <a href="<%= emailLink %>" style="color: #3498db;">
+                    <%= emailLink %>
+                </a>
+            </p>
+        </div>
+
+        <div style="background-color: #f9f9f9; padding: 20px; text-align: center; border-top: 1px solid #eeeeee;">
+            <p style="font-size: 12px; color: #888888; margin: 0;">
+                &copy; 2026 ResQMission Emergency Systems. <br>
+                If you didn't create an account, you can safely ignore this email.
+            </p>
+        </div>
+    </div>
+
+</body>
+
+</html>
