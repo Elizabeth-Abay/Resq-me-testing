@@ -90,31 +90,51 @@ async function contactServiceProviders(sentInfo) {
 
         // create acceptance link
         let acceptanceLink = `http://localhost:3000/report/accept?report_id=${emergency_id}&provider_id=${providerId}`;
-        // have a link in there to accept the notification 
-        // we need to report id and provider's id  
         
+        // Simple HTML email without templates
+        let html = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #e74c3c;">🚨 Emergency Alert</h2>
+                
+                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h3>Patient Information:</h3>
+                    <p><strong>Location:</strong> ${location}</p>
+                    <p><strong>Health State:</strong> ${healthState}</p>
+                    <p><strong>Allergies:</strong> ${allergies}</p>
+                    <p><strong>Distance:</strong> ${distanceKm} km away</p>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${acceptanceLink}" 
+                       style="background-color: #28a745; color: white; padding: 12px 30px; 
+                              text-decoration: none; border-radius: 5px; display: inline-block;">
+                        Accept Emergency Request
+                    </a>
+                </div>
+                
+                <p style="color: #666; font-size: 14px;">
+                    This is an automated emergency notification from ResQMission.
+                </p>
+            </div>
+        `
 
         let attempts = 0;
         const maxAttempts = 3;
         
         while (attempts < maxAttempts) {
             try {
+                // Send email directly without template
                 let emailSending = await sendRenderedEmail({
                     to: email,
-                    subject: "Emergency Report",
-                    templateName : "notifyProvider",
-                    payload : {
-                        location : location || "unknown", 
-                        healthState : healthState || {}, 
-                        allergies : Array.isArray(allergies) ? allergies : [], 
-                        distanceKm : distanceKm || "unknown",
-                        acceptanceLink
-                    }
+                    subject: "🚨 Emergency Alert - Patient Needs Help",
+                    htmlContent: html // Send HTML directly
                 });
 
-                if (emailSending) {
+                if (emailSending && emailSending.success) {
                     console.log(`Email sent successfully to ${email} on attempt ${attempts + 1}`);
                     return { success: true };
+                } else {
+                    throw new Error("Email service returned failure");
                 }
             } catch (error) {
                 attempts++;

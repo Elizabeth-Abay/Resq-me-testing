@@ -10,14 +10,18 @@ async function sendRenderedEmail(sentInfo) {
         // to, subject, htmlContent - expected by sendEmail
         // construct the path
         let templatePath = path.join(__dirname, `../views/${templateName}.ejs`);
+        console.log("Template path " , templatePath)
 
         let htmlContent = await ejs.renderFile(templatePath, payload);
+        // console.log("html Content " , htmlContent)
 
         let sentEmail = await sendEmail({
             to,
             subject,
             htmlContent
         })
+
+        console.log("Sent Email " , sentEmail);
 
         if (!sentEmail.success) {
             return {

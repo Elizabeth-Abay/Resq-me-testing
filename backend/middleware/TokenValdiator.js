@@ -13,6 +13,7 @@ function accessValidator(req, res, next) {
     try {
         // console.log(req)
         let access = req.headers['authorization'].split(' ');
+       
 
         let result = jwt.verify(access[1], ACCESS_TOKEN_SECRET);
 

@@ -1,7 +1,9 @@
 const uploadFilesToCloud = require('../utils/cloudinaryStreamHelper');
-const { EmergencyContactRelated } = require('../model/ProcessModel');
+const { EmergencyContactRelated, UserRelated } = require('../model/ProcessModel');
+
 
 let emergencyContactHandler = new EmergencyContactRelated();
+let userProfileHandler = new UserRelated();
 
 class EmergencyContactPpSetUpAndUpdate {
     // create
@@ -39,11 +41,16 @@ class EmergencyContactPpSetUpAndUpdate {
 
 
             // also change from string to array
-            firstEmergRelation = JSON.parse(firstEmergRelation);
-            secondEmergRelation = JSON.parse(secondEmergRelation);
-            thirdEmergRelation = JSON.parse(thirdEmergRelation);
-            fourthEmergRelation = JSON.parse(fourthEmergRelation);
-            fifthEmergRelation = JSON.parse(fifthEmergRelation);
+            if (firstEmergRelation) firstEmergRelation = JSON.parse(firstEmergRelation);
+            if (secondEmergRelation) secondEmergRelation = JSON.parse(secondEmergRelation);
+            if (thirdEmergRelation) thirdEmergRelation = JSON.parse(thirdEmergRelation);
+            if (fourthEmergRelation) fourthEmergRelation = JSON.parse(fourthEmergRelation);
+            if (fifthEmergRelation) fifthEmergRelation = JSON.parse(fifthEmergRelation);
+            
+            
+            
+            
+            
 
 
 
@@ -85,12 +92,12 @@ class EmergencyContactPpSetUpAndUpdate {
     // update
     async updateEmergencyContact({ id, name, email, relationship }) {
         try {
-            let res = await fetchAndUpdateHandler.updateEmergencyContact({ id, name, email, relationship });
+            let res = await emergencyContactHandler.updateEmergencyContact({ id, name, email, relationship });
 
             if (!res.success) {
                 return {
                     success: false,
-                    reason: "Error while calling  fetchAndUpdateHandler.updateEmergencyContact from service "
+                    reason: "Error while calling  emergencyContactHandler.updateEmergencyContact from service "
                 }
             }
 
@@ -113,7 +120,7 @@ class EmergencyContactPpSetUpAndUpdate {
     // read
     async fetchEmergencyProfiles(userId) {
         try {
-            let result = await fetchAndUpdateHandler.getEmergencyContacts(userId);
+            let result = await emergencyContactHandler.getEmergencyContacts(userId);
             // id , name, email, relationship, imageUrl
 
             if (result.success) {
@@ -144,10 +151,10 @@ class UserPpSetUpAndUpdate {
     async userProfile(sentInfo) {
         try {
             let {
-                userId, gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoName, profile
-                // , frontBuffer, backBuffer
-            } = sentInfo;
+                userId, gender, allergies, healthState, profile} = sentInfo;
 
+            // // , frontBuffer, backBuffer
+            //  HmoEnrollId, HmoCoveragePlan, CompanyName, HmoName,
             // frontUrl - for now will be the profile of the user
             let profileUrl = await uploadFilesToCloud({ buffer: profile, folder: "User-Profile-storage" })
             // let frontUrl = await uploadFilesToCloud({ buffer: frontBuffer, folder: "ResqMissionIds" });
@@ -159,18 +166,18 @@ class UserPpSetUpAndUpdate {
             // })
 
 
-            let HmoId;
-            if (!HmoName) {
-                let res = await profileModelHandler.HMOSelecter(HmoName);
-                if (!res.success) {
-                    return {
-                        success: false,
-                        reason: "HMO doesn't exist"
-                    }
-                }
+            // let HmoId;
+            // if (!HmoName) {
+            //     let res = await profileModelHandler.HMOSelecter(HmoName);
+            //     if (!res.success) {
+            //         return {
+            //             success: false,
+            //             reason: "HMO doesn't exist"
+            //         }
+            //     }
 
-                HmoId = res.HmoId;
-            }
+            //     HmoId = res.HmoId;
+            // }
 
 
 
@@ -180,8 +187,9 @@ class UserPpSetUpAndUpdate {
 
 
 
-            let finalUpload = await profileModelHandler.profileSetUp(
-                { userId, gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoId, profileUrl }
+            console.log("userProfile in service")
+            let finalUpload = await userProfileHandler.profileSetUp(
+                { userId, gender, allergies, healthState, profileUrl }
             )
 
             if (!finalUpload.success) {
@@ -207,7 +215,7 @@ class UserPpSetUpAndUpdate {
     // read
     async fetchMyProfile(userId) {
         try {
-            let res = await fetchAndUpdateHandler.getMyProfile(userId);
+            let res = await userProfileHandler.getMyProfile(userId);
 
             if (!res.success) {
                 return {
@@ -233,7 +241,7 @@ class UserPpSetUpAndUpdate {
     // update
     async updateMyProfile({ userId, updatedProfile }) {
         try {
-            let res = await fetchAndUpdateHandler.updateMyProfile({ userId, updatedProfile });
+            let res = await userProfileHandler.updateMyProfile({ userId, updatedProfile });
             // fullname,birthDate,gender,allergies,health_state,Hmo_enroll_id - info in updatedProfile
 
             if (res.success) {

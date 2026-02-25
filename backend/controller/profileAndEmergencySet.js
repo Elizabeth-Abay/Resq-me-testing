@@ -159,24 +159,21 @@ class ProfileController {
             // let frontBuffer = req.files.front[0].buffer;
             // let backBuffer = req.files.back[0].buffer;
 
-            let { gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoName } = req.body;
+            let { gender, allergies, healthState } = req.body;
+            // HmoEnrollId, HmoCoveragePlan, CompanyName, HmoName
 
 
-            let result = await profileSetterServiceHandler.userProfile({
+            console.log("userProfile in controller")
+            let result = await fetchAndUpdateUserHandler.userProfile({
                 userId,
                 gender,
                 allergies,
                 healthState,
-                // includes bloodType , 
-                // diabetes ,
-                HmoEnrollId,
-                HmoCoveragePlan,
-                CompanyName,
-                HmoName,
                 profile
-                // frontBuffer,
-                // backBuffer
+                
             });
+
+            // // HmoEnrollId, HmoCoveragePlan, CompanyName, HmoName,// frontBuffer, backBuffer
 
             if (result.success) {
                 return res.status(201).json({ message: "Successfuly created profile" });
@@ -203,16 +200,16 @@ class ProfileController {
 
             let { location, subCity, individual, licenseExp, city, identifyingLandmark } = req.body;
 
-            let result = await profileSetterServiceHandler.serviceProfile({
-                location,
-                licensePicture,
-                individual,
-                licenseExp,
-                city,
-                identifyingLandmark,
-                subCity,
-                userId
-            })
+            // let result = await profileSetterServiceHandler.serviceProfile({
+            //     location,
+            //     licensePicture,
+            //     individual,
+            //     licenseExp,
+            //     city,
+            //     identifyingLandmark,
+            //     subCity,
+            //     userId
+            // })
 
 
             if (result.success) {

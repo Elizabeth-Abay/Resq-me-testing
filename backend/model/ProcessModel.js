@@ -191,18 +191,19 @@ class UserRelated {
     // creating profile
     async profileSetUp(sentInfo) {
         try {
-            let { userId, gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoId, profileUrl
-                // idPicPath 
-            } = sentInfo;
+            let { userId, gender, allergies, healthState, profileUrl } = sentInfo;
+            // , HmoEnrollId, HmoCoveragePlan, CompanyName, HmoId,idPicPath 
 
 
+            console.log("userProfile in model")
             let query = `
-                INSERT INTO user_profile(user_id ,gender ,allergies,health_state ,Hmo_enroll_id ,Hmo_plan  ,Company_name ,HMO_info , id_picture_path , profile)
-                VALUES ($1 , $2 , $3::jsonb , $4::jsonb ,$5 ,$6 , $7 , $8 , $9 , $10 )
+                INSERT INTO user_profile(user_id ,gender ,allergies,health_state , profile)
+                VALUES ($1 , $2 , $3::jsonb , $4::jsonb ,$5 )
                 RETURNING id
             `;
 
-            let values = [userId, gender, allergies, healthState, HmoEnrollId, HmoCoveragePlan, CompanyName, HmoId, idPicPath, profileUrl];
+            // ,Hmo_enroll_id ,Hmo_plan  ,Company_name ,HMO_info , id_picture_path ,
+            let values = [userId, gender, allergies, healthState, profileUrl];
 
             console.log("Values for the values ", values)
             let result = await pool.query(query, values);
@@ -367,54 +368,44 @@ class EmergencyContactRelated {
     // setting up emergency contacts
     async setEmergencyContacts(sentInfo) {
         try {
-            // batch insert
-            let {
-                userId,
-                firstEmergName, firstEmergEmail, firstEmergRelation,
-                secondEmergName, secondEmergEmail, secondEmergRelation,
-                thirdEmergName, thirdEmergEmail, thirdEmergRelation,
-                fourthEmergName, fourthEmergEmail, fourthEmergRelation,
-                fifthEmergName, fifthEmergEmail, fifthEmergRelation,
-                firstUserUrl,
-                secondUserUrl,
-                thirdUserUrl,
-                fourthUserUrl,
-                fifthUserUrl
-            } = sentInfo;
+            const { userId } = sentInfo;
 
-            let query = `
-                INSERT INTO emergency_contacts(patient_id ,  name , email , relationship , imageUrl)
-                VALUES 
-                    ($1 , $2 , $3 , $4 , $5),
-                    ($1 , $6 , $7 , $8 , $9),
-                    ($1, $10 , $11 , $12 , $13),
-                    ($1, $14 , $15 , $16 , $17),
-                    ($1, $18, $19 , $20 , $21)
-            `
+            // 1. Group the data into an array of objects to make it iterable
+            // We only include contacts that have at least a name
+            const contacts = [
+                { name: sentInfo.firstEmergName, email: sentInfo.firstEmergEmail, rel: sentInfo.firstEmergRelation, url: sentInfo.firstUserUrl },
+                { name: sentInfo.secondEmergName, email: sentInfo.secondEmergEmail, rel: sentInfo.secondEmergRelation, url: sentInfo.secondUserUrl },
+                { name: sentInfo.thirdEmergName, email: sentInfo.thirdEmergEmail, rel: sentInfo.thirdEmergRelation, url: sentInfo.thirdUserUrl },
+                { name: sentInfo.fourthEmergName, email: sentInfo.fourthEmergEmail, rel: sentInfo.fourthEmergRelation, url: sentInfo.fourthUserUrl },
+                { name: sentInfo.fifthEmergName, email: sentInfo.fifthEmergEmail, rel: sentInfo.fifthEmergRelation, url: sentInfo.fifthUserUrl }
+            ].filter(c => c.name); // Only keep contacts where a name was provided
 
-            let values = [
-                userId,
-                firstEmergName, firstEmergEmail, firstEmergRelation, firstUserUrl,
-                secondEmergName, secondEmergEmail, secondEmergRelation, secondUserUrl,
-                thirdEmergName, thirdEmergEmail, thirdEmergRelation, thirdUserUrl,
-                fourthEmergName, fourthEmergEmail, fourthEmergRelation, fourthUserUrl,
-                fifthEmergName, fifthEmergEmail, fifthEmergRelation, fifthUserUrl
-            ];
-
-            let result = await pool.query(query, values);
-
-            console.log("Inputting into model is done ", result.rowCount)
-
-            if (result.rowCount === 0) {
-                return {
-                    success: false,
-                    reason: "Database insertion problem"
-                }
+            if (contacts.length === 0) {
+                return { success: false, reason: "No contact information provided" };
             }
 
-            return {
-                success: true
-            }
+            // 2. Build the dynamic placeholders ($1, $2, etc.)
+            const values = [];
+            const placeholders = contacts.map((_, index) => {
+                const offset = index * 5; // Each row has 5 columns
+                // Push the actual values into the flat array
+                values.push(userId, contacts[index].name, contacts[index].email, contacts[index].rel, contacts[index].url);
+
+                // Return the string for this specific row: ($1, $2, $3, $4, $5)
+                return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5})`;
+            }).join(",");
+
+            const query = `
+        INSERT INTO emergency_contacts (patient_id, name, email, relationship, imageUrl)
+        VALUES ${placeholders}
+        RETURNING *;
+    `;
+
+            const result = await pool.query(query, values);
+
+            console.log(`Inserted ${result.rowCount} emergency contacts.`);
+
+            return { success: true, count: result.rowCount };
 
         } catch (Err) {
             console.log('Error while EmergencyContactSetterModel.setEmergencyContacts ', Err.message);
@@ -479,7 +470,7 @@ class EmergencyContactRelated {
     // for ui case
     async getEmergencyContacts(userId) {
         try {
-            let query = `SELECT name, email, relationship, imageUrl FROM emergency_contacts WHERE patient_id = $1`
+            let query = `SELECT id ,name, email, relationship, imageUrl FROM emergency_contacts WHERE patient_id = $1`
             let values = [userId];
 
             let res = await pool.query(query, values);
@@ -659,4 +650,4 @@ class ReportRelated {
 
 
 
-module.exports = { ServiceProviderRelated, UserRelated, EmergencyContactRelated , ReportRelated}
+module.exports = { ServiceProviderRelated, UserRelated, EmergencyContactRelated, ReportRelated }

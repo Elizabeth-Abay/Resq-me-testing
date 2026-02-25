@@ -1,3 +1,19 @@
 When u try to resend email or Otp - get request with req parameters to be userId
 
 u need to make the http://localhost:3000/verify-email?id=${userId}&emailString=${emailString}` get handler end point
+
+
+
+
+{
+    "accessToken": "
+    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyN2M3ZmFiZS04NmFkLTRiYTItYjg5NS1hZGMxODVhODFiMWMiLCJyb2xlIjoidXNlciIsImV4cCI6MTc3MjAzNDgxOSwiaWF0IjoxNzcyMDMxMjE5fQ.jUIo7HKU9okZt9TnrbUJM9kVtlXbWStA9LbC8HX1xkU
+    ",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyYW5kb21TdHJpbmciOiIwYjY5OTQyM2E4ZTNkNDhiZTQwMTNhODQ2Y2EwMjM0OWI1YWRhZTQ1MDg2YzdiYTEzZjRjOTMzNGIzMTczMjZlODdlZGQxMmEyZmNhYTNkYWRmYjUzZGEwMDZjYjE5ZGJmOTEzMDdhNWE2MzIyODViYzQ1NmZiNzgzOWJiN2VjMSIsImV4cCI6MTc3Mzc1OTIxOS42MTcsImlhdCI6MTc3MjAzMTIxOX0.bbA-buOs-BC5eqqJ8ax5zbH6-Tq9jBVWm9RM4ThUepg",
+    "profile": {
+        "gender": null,
+        "allergies": null,
+        "health_state": null,
+        "fullname": "Elizabeth Abay"
+    }
+}

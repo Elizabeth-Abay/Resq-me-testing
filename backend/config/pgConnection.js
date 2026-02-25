@@ -15,7 +15,14 @@ const pool = new pg.Pool(
         host: DATA_BASE_HOST,
         user: DATA_BASE_USER,
         password: DATA_BASE_USER_PASSWORD,
-        database: DATA_BASE
+        database: DATA_BASE,
+        keepAlive: true,
+        keepAliveInitialDelayMillis: 10000, // Sends a probe after 10 seconds of inactivity
+        idleTimeoutMillis: 30000,           // Close idle clients after 30 seconds
+        connectionTimeoutMillis: 2000,
+        ssl: {
+            rejectUnauthorized: false
+        },
     }
 )
 
