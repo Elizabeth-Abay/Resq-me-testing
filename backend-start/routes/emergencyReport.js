@@ -10,7 +10,7 @@ const reportRouter = express.Router();
 
 
 reportRouter.post('/emergency', accessValidator , singleUpload, reportHandler.reportNow);
-
+reportRouter.get('/accept-request' , reportHandler.acceptRequest );
 
 // flow from the user perspective
 // user inputs voice
@@ -21,5 +21,7 @@ reportRouter.post('/emergency', accessValidator , singleUpload, reportHandler.re
 // contact the service providers - pg_notify - listen to that event and the listener contact
 // in that email link construct the email link  - listener - link both user id and request id - need to be sent
 // get request sent - update the table and send the emergency email to the contact
+
+module.exports = reportRouter;
 
 

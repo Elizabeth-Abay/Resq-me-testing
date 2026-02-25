@@ -1,6 +1,6 @@
 // it will listen to events from the model upon receiving the pg_notify
 const EmergencyNotificationService = require('../service/EmergNotification');
-const EmergencyNotificationHandlerObj = require('../model/pgConnectionListener');
+const EmergencyNotificationHandlerObj = require('../../backend/model/notifListener');
 
 let emergencyNotificationHandler = new EmergencyNotificationService();
 

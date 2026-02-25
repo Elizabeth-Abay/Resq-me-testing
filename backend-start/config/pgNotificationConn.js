@@ -1,3 +1,4 @@
+// configuring pg to listen to database notifications
 const pg = require('pg');
 const dotenv = require('dotenv');
 const path = require('path');

@@ -7,7 +7,7 @@ const bcryptCompare = require('../utils/bcryptCompare');
 const emailSendingService = require('./emailSendingService');
 const smsMessageSending = require('./smsMessageSending');
 const TokenGenerationServiceHandler = require('./tokenGenerationService');
-const FetchAndUpdatePpService = require('../service/profileUpdateService');
+const FetchAndUpdatePpService = require('./profileUpdateService');
 
 let authModelHandler = new AuthModelHandler();
 let tokenGenerationServiceHandler = new TokenGenerationServiceHandler();

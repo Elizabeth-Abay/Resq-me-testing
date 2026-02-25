@@ -1,9 +1,10 @@
-const EmergencyNotificationHandlerObj = require('../model/pgConnectionListener');
+const EmergencyNotificationHandlerObj = require('../../backend/model/notifListener');
 const { contactServiceProviders, notificationEmailConstructor } = require('./emailSendingService');
 const EmergencyContactSetterModel = require('../model/emergencyContactModel');
 const { EmergencyDealerModel, EmergencyReportMaker } = require('../model/emergencyReport');
 const EventEmitter = require('events'); // bc it needs to send email notification to emergency contacts
 // this will be triggered once the pg emits notifications for the request
+const getAddressFromCoords = require('../utils/addressDecoder')
 
 
 const emergencyContactSetterModelHandler = new EmergencyContactSetterModel();
@@ -21,7 +22,7 @@ class EmergencyNotificationService extends EventEmitter {
             // and also send emails automatically to the service providers
             // emergencyData - the payload from the pg notification
             // this will be called to process the notification emitted by postgresql
-            let { latitude, longitude, allergies, health_state , emergency_id} = emergencyData;
+            let { latitude, longitude, allergies, health_state, emergency_id } = emergencyData;
 
             console.log(`Processing emergency request ${emergencyData.emergency_id}`);
 
@@ -85,20 +86,23 @@ class EmergencyNotificationService extends EventEmitter {
 
     async contactProvider(provider, emergencyData) {
         try {
-            let { location , allergies, health_state ,  emergency_id } = emergencyData;
-            let { email, distanceKm , userId } = provider;
+            let { latitude, longitude, allergies, health_state, emergency_id } = emergencyData;
+            let { email, distanceKm, userId } = provider;
             let providerId = userId;
+
+            // call the decoder here 
+            let locationDecoded = await getAddressFromCoords(latitude, longitude);
 
             // decode the location for the service providers here
 
             const payload = {
                 emergency_id,
                 providerId,
-                location,
+                location: locationDecoded,
                 //  "Textual description of the lat and long explained",
                 healthState: health_state,
                 allergies: allergies,
-                distanceKm ,
+                distanceKm,
                 timestamp: new Date().toISOString()
             };
 
@@ -127,13 +131,6 @@ class EmergencyNotificationService extends EventEmitter {
     // when the users click the link i sent to the email then accepted means like we need to contact the emergency contacts
     async contactEmergencyContacts(requestId) {
         try {
-            // this will be done once the report has been accepted
-            // when the providers click the link then it will include the report id
-            // them clicking - check if accepted if not and accept if it is
-            // when they accept then contact them 
-            // do a get request- inside there will be the id of the request
-
-
             let result = await emergencyDealerHandler.emergencyContactAndEmailedInfo(requestId);
 
 
@@ -153,10 +150,41 @@ class EmergencyNotificationService extends EventEmitter {
 
             let { fullname, city, sub_city, identifying_landmark, emails } = result.data;
 
-            let sendingEmergencyEmails = await 
 
+            // 1. Create an array of Promises (one for each email)
+            const emailPromises = emails.map(email =>
+                notificationEmailConstructor({
+                    email,
+                    fullname,
+                    city,
+                    sub_city,
+                    identifying_landmark
+                })
+            );
 
+            let emailSending = await Promise.allSettled(emailPromises);
 
+            let successfulEmergencyNotification = 0;
+
+            emailSending.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    console.error(`Failed to send to ${emails[index]}:`, result.reason);
+                } else {
+                    successfulEmergencyNotification++;
+                    console.log(`Successfully sent to ${emails[index]}`);
+                }
+            });
+
+            if (successfulEmergencyNotification === 0){
+                return {
+                    success : false,
+                    reason : "Email not being sent out"
+                }
+            }
+
+            return {
+                success : true
+            }
 
         } catch (err) {
             // Log failed contact attempt
