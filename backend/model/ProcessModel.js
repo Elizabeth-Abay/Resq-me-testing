@@ -370,51 +370,61 @@ class EmergencyContactRelated {
         try {
             const { userId } = sentInfo;
 
-            // 1. Group the data into an array of objects to make it iterable
-            // We only include contacts that have at least a name
+            if (!userId) {
+                return { success: false, reason: "User ID is required" };
+            }
+
+            // Build contacts array
             const contacts = [
                 { name: sentInfo.firstEmergName, email: sentInfo.firstEmergEmail, rel: sentInfo.firstEmergRelation, url: sentInfo.firstUserUrl },
                 { name: sentInfo.secondEmergName, email: sentInfo.secondEmergEmail, rel: sentInfo.secondEmergRelation, url: sentInfo.secondUserUrl },
                 { name: sentInfo.thirdEmergName, email: sentInfo.thirdEmergEmail, rel: sentInfo.thirdEmergRelation, url: sentInfo.thirdUserUrl },
                 { name: sentInfo.fourthEmergName, email: sentInfo.fourthEmergEmail, rel: sentInfo.fourthEmergRelation, url: sentInfo.fourthUserUrl },
                 { name: sentInfo.fifthEmergName, email: sentInfo.fifthEmergEmail, rel: sentInfo.fifthEmergRelation, url: sentInfo.fifthUserUrl }
-            ].filter(c => c.name); // Only keep contacts where a name was provided
+            ].filter(c => c.name); // keep only contacts with a name
 
             if (contacts.length === 0) {
                 return { success: false, reason: "No contact information provided" };
             }
 
-            // 2. Build the dynamic placeholders ($1, $2, etc.)
             const values = [];
-            const placeholders = contacts.map((_, index) => {
-                const offset = index * 5; // Each row has 5 columns
-                // Push the actual values into the flat array
-                values.push(userId, contacts[index].name, contacts[index].email, contacts[index].rel, contacts[index].url);
 
-                // Return the string for this specific row: ($1, $2, $3, $4, $5)
+            const placeholders = contacts.map((contact, index) => {
+                const offset = index * 5;
+
+                values.push(
+                    userId,
+                    contact.name,
+                    contact.email || null,
+                    contact.rel || null,
+                    contact.url || null
+                );
+
                 return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5})`;
             }).join(",");
 
             const query = `
-        INSERT INTO emergency_contacts (patient_id, name, email, relationship, imageUrl)
-        VALUES ${placeholders}
-        RETURNING *;
-    `;
+            INSERT INTO emergency_contacts 
+            (patient_id, name, email, relationship, imageUrl)
+            VALUES ${placeholders}
+            RETURNING *;
+        `;
 
             const result = await pool.query(query, values);
 
             console.log(`Inserted ${result.rowCount} emergency contacts.`);
 
-            return { success: true, count: result.rowCount };
+        return { success: true, count: result.rowCount };
 
-        } catch (Err) {
-            console.log('Error while EmergencyContactSetterModel.setEmergencyContacts ', Err.message);
-            return {
-                success: false,
-                reason: "Error while EmergencyContactSetterModel.setEmergencyContacts"
-            }
-        }
+    } catch (Err) {
+        console.log('Error while EmergencyContactSetterModel.setEmergencyContacts ', Err.message);
+        return {
+            success: false,
+            reason: "Error while EmergencyContactSetterModel.setEmergencyContacts"
+        };
     }
+}
+
 
     // doing an update on the emergency contact
     async updateEmergencyContact(sentInfo) {
@@ -426,17 +436,17 @@ class EmergencyContactRelated {
             let index = 2; // $1 is reserved for id
 
             if (name != null) {
-                fields.push(`name = $${index++}`);
+                fields.push(`name = $${ index++}`);
                 values.push(name);
             }
 
             if (email != null) {
-                fields.push(`email = $${index++}`);
+                fields.push(`email = $${ index++ } `);
                 values.push(email);
             }
 
             if (relationship != null) {
-                fields.push(`relationship = $${index++}`);
+                fields.push(`relationship = $${ index++ } `);
                 values.push(relationship);
             }
 
@@ -446,10 +456,10 @@ class EmergencyContactRelated {
 
             const query = `
             UPDATE emergency_contacts
-            SET ${fields.join(', ')}
+            SET ${ fields.join(', ') }
             WHERE id = $1
-            RETURNING *
-        `;
+        RETURNING *
+            `;
 
             const result = await pool.query(query, [id, ...values]);
 
@@ -470,7 +480,7 @@ class EmergencyContactRelated {
     // for ui case
     async getEmergencyContacts(userId) {
         try {
-            let query = `SELECT id ,name, email, relationship, imageUrl FROM emergency_contacts WHERE patient_id = $1`
+            let query = `SELECT id, name, email, relationship, imageUrl FROM emergency_contacts WHERE patient_id = $1`
             let values = [userId];
 
             let res = await pool.query(query, values);
@@ -525,7 +535,7 @@ class EmergencyContactRelated {
             // do a join between the request table and emergecny contact table
             // we need the information of the service provider
             let query = `
-                SELECT ec.email , v_u.fullname , spp.city , spp.sub_city , spp.identifying_landmark  
+                SELECT ec.email, v_u.fullname, spp.city, spp.sub_city, spp.identifying_landmark  
                 FROM  emergency_report er 
                 INNER JOIN verified_users v_u
                 ON er.reporter_id = v_u.id
@@ -588,7 +598,7 @@ class ReportRelated {
     async createAReport(sentInfo) {
         try {
             let { userId, severity, longitude, latitude } = sentInfo;
-            let query = `SELECT * FROM  creating_a_report($1 , $2 , $3, $4)`
+            let query = `SELECT * FROM  creating_a_report($1, $2, $3, $4)`
             let values = [userId, severity, longitude, latitude];
 
             let result = await pool.query(query, values);

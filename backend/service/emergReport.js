@@ -2,7 +2,14 @@ const { ReportRelated, ServiceProviderRelated, UserRelated, EmergencyContactRela
 const { contactServiceProviders, notificationEmailConstructor } = require('./emailSendingService');
 const EventEmitter = require('events'); // bc it needs to send email notification to emergency contacts
 // this will be triggered once the pg emits notifications for the request
-const getAddressFromCoords = require('../utils/addressDecoder')
+const getAddressFromCoords = require('../utils/addressDecoder');
+const transcribeAudio = require('../service/voiceTranscription');
+const dotenv = require('dotenv');
+const path = require('path');
+
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+const { MODEL_URL } = process.env;
 
 
 const reportMaker = new ReportRelated();
@@ -110,6 +117,10 @@ class User {
 
             // first transcribe
             if (audioBuffer) {
+                console.log("Audio buffer received, starting transcription...", audioBuffer);
+                if (!audioBuffer) {
+                    // make the request directly and notify criticality
+                }
                 let sentToAI = await this.sendToAI({ audioBuffer, userId });
 
                 if (!sentToAI.success) {
@@ -122,25 +133,25 @@ class User {
                 // {"severity" : "Critical","priority_level"1,"recommended_action""Senhelimmediately","first_aid_steps"["Checfovisiblinjuries","Cleasmalwoundipossible","Keethvicticomfortable.","Monitofodizziness","Stawitthvictim"]
 
                 // see the ai thing
-                let { severity,first_aid_steps  } = sentToAI.data;
+                let { severity, first_aid_steps } = sentToAI.data;
 
 
                 let puttingIntoTable = await this.putIntoTable({ severity, userId, latitude, longitude });
 
-                
+
 
                 if (puttingIntoTable.success) {
-                    if (severity.toLowerCase() === 'low'){
+                    if (severity.toLowerCase() === 'low') {
                         return {
-                            success : true,
-                            firstAid : first_aid_steps,
-                            message : "You have first aid"
+                            success: true,
+                            firstAid: first_aid_steps,
+                            message: "You have first aid"
                         }
                     }
                     return {
                         success: true,
-                        message : "A service provider will be contacted Immediately",
-                        firstAid : first_aid_steps
+                        message: "A service provider will be contacted Immediately",
+                        firstAid: first_aid_steps
                     }
                 }
 
@@ -158,6 +169,18 @@ class User {
         }
     }
 
+    async makeRequestWithoutAudio(sentInfo) {
+        try {
+
+        } catch (Err) {
+            console.log("Error while ReportEmergency.makeRequestWithoutAudio", Err.message);
+            return {
+                success: false,
+                reason: "Error while ReportEmergency.makeRequestWithoutAudio"
+            }
+        }
+    }
+
 
     // send to ai, put into correction , put into table , go on to select the service providers , notify them 
     async sendToAI(sentInfo) {
@@ -165,6 +188,7 @@ class User {
             let { audioBuffer, userId } = sentInfo;
             // audioBuffer is the data stream
             let sentPayload = {};
+
 
             let result = await transcribeAudio(audioBuffer);
 
@@ -175,26 +199,30 @@ class User {
                 }
             }
 
+
+
+
             sentPayload.message = result.data;
 
+
             // and check consent to share with ai
-            let consent = await emergencyReportMaker.healthProfileSelector(userId);
+            // let consent = await emergencyReportMaker.healthProfileSelector(userId);
 
-            if (!consent.success) {
-                return {
-                    success: false,
-                    reason: "Error while fetching the health profile"
-                }
-            }
+            // if (!consent.success) {
+            //     return {
+            //         success: false,
+            //         reason: "Error while fetching the health profile"
+            //     }
+            // }
 
-            let { data } = consent;
+            // let { data } = consent;
 
-            if (data.consent_to_share_information_ai) {
-                // then add it to payload
-                sentPayload.gender = data.gender,
-                    sentPayload.healthInformatuion = data.health_state,
-                    sentPayload.allergies = data.allergies
-            }
+            // if (data.consent_to_share_information_ai) {
+            //     // then add it to payload
+            //     sentPayload.gender = data.gender,
+            //         sentPayload.healthInformatuion = data.health_state,
+            //         sentPayload.allergies = data.allergies
+            // }
 
             // then do a post request to the ai end point to microservice ai
             let aiMessage = await fetch(
@@ -262,6 +290,6 @@ class User {
 }
 
 
-module.exports = { User , ServiceProvider }
+module.exports = { User, ServiceProvider }
 
 

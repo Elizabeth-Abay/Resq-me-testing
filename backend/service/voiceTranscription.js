@@ -1,17 +1,12 @@
-const openai = require('../config/openAIConfig');
-const { toFile } = require('openai');
+const client = require('../config/assemblyAIConfig');
 
 // then send the voice message to the ai and then recive the transcription
 async function transcribeAudio(filestream) {
     try {
-        let fileForm = await toFile(filestream , 'audio.m4a');
-        let result = await openai.audio.transcriptions.create({
-            file: fileForm,
-            model: "whisper-1",
-            response_format: "json"
+        let result = await client.transcripts.transcribe({
+            audio : filestream
         });
 
-        console.log("Result from open ai's transcription is ", result);
 
         if (!result) {
             return {
@@ -20,9 +15,11 @@ async function transcribeAudio(filestream) {
             }
         }
 
+        console.log("Result from assembly ai's transcription is ", result.text);
+
         return {
             success: true,
-            data: result
+            data: result.text
         }
 
     } catch (err) {
