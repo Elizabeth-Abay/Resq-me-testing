@@ -8,8 +8,7 @@ let serviceProviderHandler = new ServiceProviderRelated();
 // this will listen to the event emitted by the database
 class EmergencyNotificationService {
     constructor() {
-        super();
-        // this.on()
+        // No super() needed - this is not extending EventEmitter
     };
 
     async processEmergencyRequest(emergencyData) {

@@ -6,6 +6,7 @@ const accepterObj = new ServiceProvider();
 class ReportHandler {
     async reportNow(req, res) {
         try {
+            // console.log("Received reportNow request with body: ", req.file);
             let audioBuffer = req.file.buffer;
             let userId = req.decodedAccess.userId;
             let { latitude, longitude } = req.body;

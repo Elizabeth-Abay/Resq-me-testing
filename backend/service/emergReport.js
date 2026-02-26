@@ -176,7 +176,7 @@ class User {
             console.log("Error while ReportEmergency.makeRequestWithoutAudio", Err.message);
             return {
                 success: false,
-                reason: "Error while ReportEmergency.makeRequestWithoutAudio"
+                reason: "Error while ReportEmergency.makeRequestWithtoutAudio"
             }
         }
     }
@@ -225,6 +225,8 @@ class User {
             // }
 
             // then do a post request to the ai end point to microservice ai
+
+            console.log("Sending payload to AI microservice: ", sentPayload);
             let aiMessage = await fetch(
                 MODEL_URL,
                 {
@@ -236,10 +238,17 @@ class User {
                 }
             )
 
+            if (!aiMessage.ok) {
+                console.log("AI microservice responded with an error: ", aiMessage.statusText);
+                return {
+                    success: false,
+                    reason: "AI microservice error: " + aiMessage.statusText
+                };
+            }
+
             let aiResponse = await aiMessage.json();
             console.log("AI Response: ", aiResponse);
-
-
+        
             if (!aiResponse.error) {
                 return {
                     success: true,
@@ -251,7 +260,7 @@ class User {
                 success: false
             }
         } catch (Err) {
-            console.log("Error while ReportEmergency.sendToAI ", Err.message);
+            console.log("Error while ReportEmergency.sendToAI ", Err);
             return {
                 success: false,
                 reason: "Error while ReportEmergency.sendToAI "

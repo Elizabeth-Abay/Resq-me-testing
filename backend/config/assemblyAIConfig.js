@@ -8,9 +8,13 @@ dotenv.config({
 
 let { ASSEMBLY_AI_API_KEY } = process.env;
 
+// console.log('AssemblyAI API Key from environment variables:', ASSEMBLY_AI_API_KEY);
+
 const client = new AssemblyAI({
     apiKey: ASSEMBLY_AI_API_KEY
 });
 
+
+// console.log("client " , client);
 
 module.exports = client;

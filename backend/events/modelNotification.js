@@ -1,38 +1,42 @@
-const EmergencyNotificationHandlerObj = require('../model/notifListener');
 const EmergencyNotificationService = require('../service/notificationListener');
 
 const emergencyNotificationHandler = new EmergencyNotificationService();
 
+
+console.log(' [EVENT] Event listener setup complete');
+
 async function HandleEvent(payload) {
     try {
+        console.log(' [EVENT] Processing emergency event:', payload);
+        
         // 'emergency_id','allergies', 'health_state','latitude','longitude'
         let result = await emergencyNotificationHandler.processEmergencyRequest(payload);
 
         if (!result.success) {
+            console.error(' [EVENT] Failed to process emergency event:', result.reason);
             return {
                 success: false,
-                reason: "Error while emergencyNotificationHandler.processEmergencyRequest(payload)"
+                reason: "Error while emergencyNotificationHandler.processEmergencyRequest(payload): " + (result.reason || "Unknown error")
             }
         }
 
+        console.log(' [EVENT] Emergency event processed successfully:', result.message);
         return {
-            success: true
+            success: true,
+            message: result.message
         }
 
     } catch (Err) {
-        console.log("Error while HandleEvent ", Err.message);
+        console.error(' [EVENT] Critical error in HandleEvent:', Err.message);
+        console.error(' [EVENT] Stack trace:', Err.stack);
         return {
             success: false,
-            reason: "Error while HandleEvent "
+            reason: "Error while HandleEvent: " + Err.message
         }
     }
 }
 
 
-EmergencyNotificationHandlerObj.on('emergency_request_made', (payload) => {
-    // We call the async function but attach a .catch to the promise 
-    // to ensure no background crashes happen.
-    HandleEvent(payload).catch(err => {
-        console.error("CRITICAL SYSTEM ERROR: Emergency event failed to execute", err);
-    });
-});
+module.exports = HandleEvent;
+
+

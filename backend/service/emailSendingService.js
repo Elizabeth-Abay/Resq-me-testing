@@ -46,10 +46,10 @@ async function emailSendingService(sentInfo) {
 
 async function notificationEmailConstructor({ emails, fullname, city, sub_city, identifying_landmark }) {
     try {
-        if (emails.length === 0){
+        if (emails.length === 0) {
             return {
-                success : false,
-                reason : "The emails are empty for notificationEmailConstructor"
+                success: false,
+                reason: "The emails are empty for notificationEmailConstructor"
             }
         }
         let subject = "Notifying Accident";
@@ -86,48 +86,59 @@ async function notificationEmailConstructor({ emails, fullname, city, sub_city, 
 async function contactServiceProviders(sentInfo) {
     try {
         let { email, payload } = sentInfo;
-        let { location, healthState, allergies, distanceKm ,  emergency_id , providerId} = payload;
+        let { location, healthState, allergies, distanceKm, emergency_id, providerId } = payload;
+
+
+        let allergyArray = [];
+
+        if (allergies && typeof allergies === 'object') {
+            // If it's already an array, just use it
+            if (Array.isArray(allergies)) {
+                allergyArray = allergies;
+            } else {
+                // If it's an object {"pollen": "high"}, turn it into ["pollen (high)"]
+                allergyArray = Object.entries(allergies).map(([key, value]) => {
+                    return `${key} (${value})`;
+                });
+            }
+        }
+
+
+
+
+        let healthSummaryArray = [];
+
+        if (healthState && typeof healthState === 'object' && !Array.isArray(healthState)) {
+            // Transform {"pulse": "80"} into ["Pulse: 80"]
+            healthSummaryArray = Object.entries(healthState).map(([key, value]) => {
+                // Clean up the key (e.g., 'blood_pressure' -> 'Blood Pressure')
+                const cleanKey = key.replace(/_/g, ' ')
+                    .replace(/\b\w/g, char => char.toUpperCase());
+                return `${cleanKey}: ${value}`;
+            });
+        } else if (Array.isArray(healthState)) {
+            healthSummaryArray = healthState;
+        }
+
 
         // create acceptance link
-        let acceptanceLink = `http://localhost:3000/report/accept?report_id=${emergency_id}&provider_id=${providerId}`;
-        
+        let acceptanceLink = `http://localhost:3000/reports/accept-request?report_id=${emergency_id}&provider_id=${providerId}`;
+        console.log("Acceptance link: ", acceptanceLink);
+
         // Simple HTML email without templates
-        let html = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #e74c3c;">🚨 Emergency Alert</h2>
-                
-                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h3>Patient Information:</h3>
-                    <p><strong>Location:</strong> ${location}</p>
-                    <p><strong>Health State:</strong> ${healthState}</p>
-                    <p><strong>Allergies:</strong> ${allergies}</p>
-                    <p><strong>Distance:</strong> ${distanceKm} km away</p>
-                </div>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="${acceptanceLink}" 
-                       style="background-color: #28a745; color: white; padding: 12px 30px; 
-                              text-decoration: none; border-radius: 5px; display: inline-block;">
-                        Accept Emergency Request
-                    </a>
-                </div>
-                
-                <p style="color: #666; font-size: 14px;">
-                    This is an automated emergency notification from ResQMission.
-                </p>
-            </div>
-        `
+
 
         let attempts = 0;
         const maxAttempts = 3;
-        
+
         while (attempts < maxAttempts) {
             try {
                 // Send email directly without template
                 let emailSending = await sendRenderedEmail({
                     to: email,
                     subject: "🚨 Emergency Alert - Patient Needs Help",
-                    htmlContent: html // Send HTML directly
+                    templateName: "notifyProvider", // Send HTML directly
+                    payload: { location, healthState : healthSummaryArray, allergies: allergyArray, distanceKm, acceptanceLink }
                 });
 
                 if (emailSending && emailSending.success) {
@@ -139,12 +150,12 @@ async function contactServiceProviders(sentInfo) {
             } catch (error) {
                 attempts++;
                 console.log(`Email attempt ${attempts} failed for ${email}:`, error.message);
-                
+
                 if (attempts >= maxAttempts) {
                     console.log(`Failed to send to ${email} after ${maxAttempts} attempts`);
                     return { success: false, reason: "Email delivery failed after retries" };
                 }
-                
+
                 // Wait before retry: 1s, 2s, 3s
                 await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
             }

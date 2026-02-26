@@ -4,7 +4,8 @@ const client = require('../config/assemblyAIConfig');
 async function transcribeAudio(filestream) {
     try {
         let result = await client.transcripts.transcribe({
-            audio : filestream
+            audio : filestream,
+            speech_models: ["universal-2"]
         });
 
 
@@ -23,7 +24,7 @@ async function transcribeAudio(filestream) {
         }
 
     } catch (err) {
-        console.log("Error while transcribeAudio ", err.message);
+        console.log("Error while transcribeAudio ", err);
         return {
             success: false,
             reason: "Failed to do voice transcription"
