@@ -2,6 +2,7 @@ const sendRenderedEmail = require('../utils/sendRenderedEmail');
 //  to, subject, templateName , payload this is input req for sendRenderedEmail
 
 
+
 async function emailSendingService(sentInfo) {
     try {
         const { email, emailString, userId } = sentInfo;
@@ -12,12 +13,13 @@ async function emailSendingService(sentInfo) {
         // { to, subject, html }
 
         let info = await sendRenderedEmail({
-            to: { email },
+            to: email ,
             subject: "Verify your email",
             templateName: 'authEmail',
             payload: {
                 emailLink
-            }
+            },
+            emailCase : "Authentication"
         });
 
         console.log(info)
@@ -55,10 +57,12 @@ async function notificationEmailConstructor({ emails, fullname, city, sub_city, 
         let subject = "Notifying Accident";
         let payload = { fullname, city, sub_city, identifying_landmark }
 
+        let emailArray = emails.map(obj => obj.email);
+
         let emailSending = await sendRenderedEmail({
             templateName: 'notifyEmergContacts',
-            to: emails,
-            // emails = [ { email }]
+            to: emailArray,
+            // emails = [  email ]
             subject,
             payload
         })
@@ -133,7 +137,6 @@ async function contactServiceProviders(sentInfo) {
 
         while (attempts < maxAttempts) {
             try {
-                // Send email directly without template
                 let emailSending = await sendRenderedEmail({
                     to: email,
                     subject: "🚨 Emergency Alert - Patient Needs Help",

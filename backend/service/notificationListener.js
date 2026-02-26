@@ -30,6 +30,7 @@ class EmergencyNotificationService {
                 // try by increasing the radius
                 searchRadiusKm = 15;
                 nearbyProviders = await serviceProviderHandler.findNearbyProviders({ latitude, longitude, searchRadiusKm });
+                // { success: true, data: [ { userId , name ,phone,email,city , subCity , landmark , distanceKm} ] }
             }
 
             console.log(`Found ${nearbyProviders.data.length} nearby providers`);
@@ -45,12 +46,14 @@ class EmergencyNotificationService {
             console.log("Location from decoded latitude and longitude ", locationDecoded.data);
 
             // Contact each provider
+            // lets try batch processing here, we can send emails to all providers at once using the batch email sending function
             const contactPromises = nearbyProviders.data.map(provider =>
                 this.contactProvider(provider, emergencyData, locationDecoded.data)
                 // { location, healthState, allergies, distanceKm, emergency_id, providerId }
                 // providerInfo = { userId , name ,phone,email,city , subCity , landmark , distanceKm}
             );
 
+            let emailsAll = nearbyProviders.data.map(provider => provider.email);
 
             // results will be an array of each async tasks completion
             //  [ { status: "rejected"/"fulfilled", reason: "Connection Timeout" } ]

@@ -1,13 +1,15 @@
 const ejs = require('ejs');
 const path = require('path');
-const sendEmail = require('./emailSender');
+const sendSingleEmail = require('../utils/sendSingleEmail');
+const sendToManyUsers = require('../utils/sendBatchEmails');
+const e = require('express');
 
 
 async function sendRenderedEmail(sentInfo) {
     try {
-        let { to, subject, templateName , payload} = sentInfo;
+        let { to, subject, templateName , payload , emailCase } = sentInfo;
 
-        // to, subject, htmlContent - expected by sendEmail
+        // to, subject, html - expected by sendEmail
         // construct the path
         let templatePath = path.join(__dirname, `../views/${templateName}.ejs`);
         console.log("Template path " , templatePath)
@@ -15,7 +17,20 @@ async function sendRenderedEmail(sentInfo) {
         let htmlContent = await ejs.renderFile(templatePath, payload);
         // console.log("html Content " , htmlContent)
 
-        let sentEmail = await sendEmail({
+
+        let sentEmail;
+        // check if u are sending to multiple users or single user
+        if (emailCase === "Authentication") {
+            sentEmail = await sendSingleEmail({
+                to: sentInfo.email,
+                subject,
+                html: htmlContent
+            })
+        }
+
+        // then we get many users for notification email
+        // array of emails
+        sentEmail = await sendToManyUsers({
             to,
             subject,
             htmlContent
