@@ -12,14 +12,22 @@ async function emailSendingService(sentInfo) {
         console.log("Sent email link bla bla bla", emailLink);
         // { to, subject, html }
 
-        let info = await sendRenderedEmail({
-            to: email ,
+        console.log("Email sending service received info ", {
+            to: email,
             subject: "Verify your email",
             templateName: 'authEmail',
             payload: {
                 emailLink
-            },
-            emailCase : "Authentication"
+            }
+        });
+
+        let info = await sendRenderedEmail({
+            to: email,
+            subject: "Verify your email",
+            templateName: 'authEmail',
+            payload: {
+                emailLink
+            }
         });
 
         console.log(info)
@@ -64,7 +72,8 @@ async function notificationEmailConstructor({ emails, fullname, city, sub_city, 
             to: emailArray,
             // emails = [  email ]
             subject,
-            payload
+            payload,
+            emailCase: "Emergency-Notification"
         })
 
         if (!emailSending.success) {
@@ -139,9 +148,9 @@ async function contactServiceProviders(sentInfo) {
             try {
                 let emailSending = await sendRenderedEmail({
                     to: email,
-                    subject: "🚨 Emergency Alert - Patient Needs Help",
-                    templateName: "notifyProvider", // Send HTML directly
-                    payload: { location, healthState : healthSummaryArray, allergies: allergyArray, distanceKm, acceptanceLink }
+                    subject: "Emergency Alert - Patient Needs Help",
+                    templateName: "notifyProvider",
+                    payload: { location, healthState: healthSummaryArray, allergies: allergyArray, distanceKm, acceptanceLink }
                 });
 
                 if (emailSending && emailSending.success) {

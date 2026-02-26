@@ -238,6 +238,11 @@ class AuthService {
             }
 
             let { refreshToken } = refreshTokenResult;
+
+            console.log("Email verified successfully for user id ", {
+                accessToken,
+                refreshToken
+            });
             return {
                 success: true,
                 data: {
@@ -245,6 +250,7 @@ class AuthService {
                     refreshToken
                 }
             }
+
 
         } catch (err) {
             console.log("Error while AuthService.validateEmailLink ", err.message);

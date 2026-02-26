@@ -3,7 +3,7 @@ const resend = require('../config/resendAIConfig');
 async function sendSingleEmail({ to, subject, html }) {
     try {
         const emailData = {
-            from: 'ResQMission <noreply@resqmission.com>',
+            from: 'ResQMission <noreply@resqmeapp.win>',
             to,
             subject,
             html
