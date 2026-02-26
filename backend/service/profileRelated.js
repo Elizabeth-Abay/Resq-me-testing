@@ -46,11 +46,11 @@ class EmergencyContactPpSetUpAndUpdate {
             if (thirdEmergRelation) thirdEmergRelation = JSON.parse(thirdEmergRelation);
             if (fourthEmergRelation) fourthEmergRelation = JSON.parse(fourthEmergRelation);
             if (fifthEmergRelation) fifthEmergRelation = JSON.parse(fifthEmergRelation);
-            
-            
-            
-            
-            
+
+
+
+
+
 
 
 
@@ -151,7 +151,7 @@ class UserPpSetUpAndUpdate {
     async userProfile(sentInfo) {
         try {
             let {
-                userId, gender, allergies, healthState, profile} = sentInfo;
+                userId, gender, allergies, healthState, profile } = sentInfo;
 
             // // , frontBuffer, backBuffer
             //  HmoEnrollId, HmoCoveragePlan, CompanyName, HmoName,
@@ -224,9 +224,17 @@ class UserPpSetUpAndUpdate {
                 }
             }
 
+            let dataSent ={
+                gender : res.data.gender,
+                allergies : typeof res.data.allergies === 'string' ? JSON.parse(res.data.allergies) : res.data.allergies,
+                health_state : typeof res.data.health_state === 'string' ? JSON.parse(res.data.health_state) : res.data.health_state,
+                fullname : res.data.fullname,
+                profile : res.data.profile
+            }
+
             return {
                 success: true,
-                data: res.data
+                data: dataSent
             }
         } catch (Err) {
             console.log("Error while FetchAndUpdatePpService.fetchEmergencyProfiles ", Err.message);

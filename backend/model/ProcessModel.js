@@ -232,7 +232,7 @@ class UserRelated {
     async getMyProfile(userId) {
         try {
             let query = `
-            SELECT up.gender, up.allergies, up.health_state ,  vu.fullname
+            SELECT up.gender, up.allergies, up.health_state ,  vu.fullname , up.profile
             FROM verified_users vu
             LEFT JOIN user_profile up
             ON vu.id = up.user_id
