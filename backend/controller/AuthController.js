@@ -5,8 +5,8 @@ let signUpServiceHandler = new SignUpServiceHandler();
 class AuthController {
     async signUp(req, res) {
         try {
-            console.log(req.validatedBody , "is this req.validatedBody")
-            let { fullname, email, phone, password, deviceIdentifier , role , birthDate} = req.validatedBody;
+            console.log(req.validatedBody, "is this req.validatedBody")
+            let { fullname, email, phone, password, deviceIdentifier, role, birthDate } = req.validatedBody;
 
             let result = await signUpServiceHandler.signUp({
                 fullname,
@@ -51,8 +51,12 @@ class AuthController {
             let result = await signUpServiceHandler.validateEmailLink({ userId, tokenString });
 
             if (result.success) {
+                let { accessToken, refreshToken } = result.data;
+
                 // redirect users to their app
-                return res.status(302).json(result.data);
+                const appUrl = `mycoolapp://verification-success?accessToken=${accessToken}&refreshToken=${refreshToken}`;
+
+                return res.status(302).redirect(appUrl);
             } else {
                 return res.status(400).json(result);
             }

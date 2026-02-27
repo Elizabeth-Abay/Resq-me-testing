@@ -1,12 +1,21 @@
 const sendRenderedEmail = require('../utils/sendRenderedEmail');
 //  to, subject, templateName , payload this is input req for sendRenderedEmail
+const dotenv = require('dotenv');
+const path = require('path');
+
+dotenv.config({
+    path : path.join(__dirname , '../.env')
+});
+
+
+const { APP_URL} = process.env;
 
 
 
 async function emailSendingService(sentInfo) {
     try {
         const { email, emailString, userId } = sentInfo;
-        let emailLink = `https://resq-app-741m.onrender.com/auth/verify-email?userId=${userId}&tokenString=${emailString}`;
+        let emailLink = `${APP_URL}/auth/verify-email?userId=${userId}&tokenString=${emailString}`;
 
 
         console.log("Sent email link bla bla bla", emailLink);
@@ -137,7 +146,7 @@ async function contactServiceProviders(sentInfo) {
 
 
         // create acceptance link
-        let acceptanceLink = `http://localhost:3000/reports/accept-request?report_id=${emergency_id}&provider_id=${providerId}`;
+        let acceptanceLink = `${APP_URL}/reports/accept-request?report_id=${emergency_id}&provider_id=${providerId}`;
         console.log("Acceptance link: ", acceptanceLink);
 
         // Simple HTML email without templates

@@ -7,7 +7,7 @@ const e = require('express');
 
 async function sendRenderedEmail(sentInfo) {
     try {
-        let { to, subject, templateName, payload, emailCase } = sentInfo;
+        let { to, subject, templateName, payload, emailCase, type } = sentInfo;
         console.log("sendRenderedEmail called with: ", sentInfo);
 
         // to, subject, html - expected by sendEmail
@@ -15,9 +15,24 @@ async function sendRenderedEmail(sentInfo) {
         let templatePath = path.join(__dirname, `../views/${templateName}.ejs`);
         console.log("Template path ", templatePath)
 
-        let htmlContent = await ejs.renderFile(templatePath, payload);
+        let html = await ejs.renderFile(templatePath, payload);
         // console.log("html Content " , htmlContent)
 
+        let cleanedEmails = to;
+        if (Array.isArray(to)) {
+            cleanedEmails = to.map(email => {
+                if (typeof email === 'string') {
+                    // Remove quotes if present and clean whitespace
+                    let cleanedEmail = email.replace(/^"|"$/g, '').trim();
+                    console.log(`🔧 Cleaning email: "${email}" -> "${cleanedEmail}"`);
+                    return cleanedEmail;
+                }
+                return email;
+            });
+        }
+
+
+        console.log("Cleaned Emails: ", cleanedEmails);
 
         let sentEmail;
         // check if u are sending to multiple users or single user
@@ -25,13 +40,13 @@ async function sendRenderedEmail(sentInfo) {
             // then we get many users for notification email
             // array of emails
             sentEmail = await sendToManyUsers({
-                to,
+                to: cleanedEmails,
                 subject,
-                htmlContent
+                html
             })
         }
 
-        else{
+        else {
             sentEmail = await sendSingleEmail({
                 to,
                 subject,
