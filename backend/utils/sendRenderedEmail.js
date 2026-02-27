@@ -50,7 +50,7 @@ async function sendRenderedEmail(sentInfo) {
             sentEmail = await sendSingleEmail({
                 to,
                 subject,
-                html: htmlContent
+                html
             })
 
         }
