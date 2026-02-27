@@ -8,6 +8,7 @@ const e = require('express');
 async function sendRenderedEmail(sentInfo) {
     try {
         let { to, subject, templateName, payload, emailCase } = sentInfo;
+        console.log("sendRenderedEmail called with: ", sentInfo);
 
         // to, subject, html - expected by sendEmail
         // construct the path
@@ -30,12 +31,14 @@ async function sendRenderedEmail(sentInfo) {
             })
         }
 
-        sentEmail = await sendSingleEmail({
+        else{
+            sentEmail = await sendSingleEmail({
                 to,
                 subject,
                 html: htmlContent
             })
 
+        }
 
 
         console.log("Sent Email ", sentEmail);

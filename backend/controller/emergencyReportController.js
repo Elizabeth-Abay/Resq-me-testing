@@ -33,6 +33,7 @@ class ReportHandler {
     async acceptRequest(req, res) {
         try {
             let {report_id , provider_id } = req.query;
+            console.log("Received acceptRequest with query params: ", req.query);
 
             let result = await accepterObj.acceptEmergency({ acceptorId : provider_id , requestId : report_id  });
 

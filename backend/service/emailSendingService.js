@@ -65,11 +65,13 @@ async function notificationEmailConstructor({ emails, fullname, city, sub_city, 
         let subject = "Notifying Accident";
         let payload = { fullname, city, sub_city, identifying_landmark }
 
-        let emailArray = emails.map(obj => obj.email);
+        console.log("notificationEmailConstructor received info ", { emails, fullname, city, sub_city, identifying_landmark })
+
+    
 
         let emailSending = await sendRenderedEmail({
             templateName: 'notifyEmergContacts',
-            to: emailArray,
+            to: emails,
             // emails = [  email ]
             subject,
             payload,

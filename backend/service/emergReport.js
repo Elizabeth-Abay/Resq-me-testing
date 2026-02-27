@@ -24,6 +24,9 @@ class ServiceProvider {
             // notify the user and update the table
             let { acceptorId, requestId } = sentInfo;
             // notify the emergency contacts
+
+
+            console.log(`ServiceProvider.acceptEmergency called with acceptorId: ${acceptorId}, requestId: ${requestId}`);
             let res = await reportMaker.acceptReport({ acceptorId, requestId });
 
             if (!res.success) {
@@ -133,7 +136,7 @@ class User {
                 // {"severity" : "Critical","priority_level"1,"recommended_action""Senhelimmediately","first_aid_steps"["Checfovisiblinjuries","Cleasmalwoundipossible","Keethvicticomfortable.","Monitofodizziness","Stawitthvictim"]
 
                 // see the ai thing
-                let { severity, first_aid_steps } = sentToAI.data;
+                let { severity, first_aid_steps } = sentToAI.data; 
 
 
                 let puttingIntoTable = await this.putIntoTable({ severity, userId, latitude, longitude });
@@ -226,38 +229,45 @@ class User {
 
             // then do a post request to the ai end point to microservice ai
 
-            console.log("Sending payload to AI microservice: ", sentPayload);
-            let aiMessage = await fetch(
-                MODEL_URL,
-                {
-                    method: 'POST',
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(sentPayload)
-                }
-            )
+            // console.log("Sending payload to AI microservice: ", sentPayload);
+            // let aiMessage = await fetch(
+            //     MODEL_URL,
+            //     {
+            //         method: 'POST',
+            //         headers: {
+            //             "Content-Type": "application/json"
+            //         },
+            //         body: JSON.stringify({ ...sentPayload  , stream: true})
+            //     }
+            // )
 
-            if (!aiMessage.ok) {
-                console.log("AI microservice responded with an error: ", aiMessage.statusText);
-                return {
-                    success: false,
-                    reason: "AI microservice error: " + aiMessage.statusText
-                };
-            }
+            // if (!aiMessage.ok) {
+            //     console.log("AI microservice responded with an error: ", aiMessage.statusText);
+            //     return {
+            //         success: false,
+            //         reason: "AI microservice error: " + aiMessage.statusText
+            //     };
+            // }
 
-            let aiResponse = await aiMessage.json();
-            console.log("AI Response: ", aiResponse);
+            // let aiResponse = await aiMessage.json();
+            // console.log("AI Response: ", aiResponse);
         
-            if (!aiResponse.error) {
-                return {
-                    success: true,
-                    data: aiResponse
-                }
-            }
+            // if (!aiResponse.error) {
+            //     return {
+            //         success: true,
+            //         data: aiResponse
+            //     }
+            // }
 
+            // return {
+            //     success: false
+            // }
+
+
+            // to be deleted 
             return {
-                success: false
+                success: true,
+                data: {"severity" : "Critical","priority_level":1,"recommended_action":"Send help immediately","first_aid_steps":["Check for visible injuries","Clean minor wounds if possible","Keep victim comfortable.","Monitor for dizziness","Stay with victim"]} 
             }
         } catch (Err) {
             console.log("Error while ReportEmergency.sendToAI ", Err);

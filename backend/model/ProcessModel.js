@@ -631,11 +631,13 @@ class ReportRelated {
             // check if acceptor is serviceprovider
 
             let query = `
-                UPDATE emergency_report SET accepted_by = $1 WHERE id = $2 AND accepted_by IS NULL
+                UPDATE emergency_report SET accepted_by = $1 WHERE id = $2 AND accepted_by IS NULL RETURNING *
             `
             let values = [acceptorId, requestId];
 
             let res = await pool.query(query, values);
+
+            console.log("Result of accepting the report ", res.rows , res.rowCount)
 
             if (res.rowCount === 0) {
                 return {

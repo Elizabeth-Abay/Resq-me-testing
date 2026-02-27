@@ -1,8 +1,8 @@
 const resend = require('../config/resendAIConfig');
 
-async function sendToManyUsers({emails, subject , html}) {
+async function sendToManyUsers({to, subject , html}) {
     // 1. Map your array of emails into the format Resend expects
-    const batchData = emails.map(email => ({
+    const batchData = to.map(email => ({
         from: 'ResQMission <alerts@resqmeapp.win>',
         to: email,
         subject,
