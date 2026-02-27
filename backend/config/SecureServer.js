@@ -4,13 +4,13 @@ const helmet = require('helmet');
 const compression = require('compression');
 const DatabaseManager = require('./DatabaseManager');
 const { Logger, createPerformanceMiddleware, createErrorMiddleware } = require('../utils/Logger');
-const { generalLimiter } = require('../middleware/rateLimitingMiddleware');
+const { generalLimiter } = require('../../backend-start/middleware/rateLimitingMiddleware');
 
 // Import routes
-const authRouter = require('../routes/AuthRoute');
-const tokenRouter = require('../routes/tokenRoute');
-const profileRouter = require('../routes/profileSetter');
-const robustEmergencyRouter = require('../routes/robustEmergencyRoutes');
+const authRouter = require('../../backend-start/routes/AuthRoute');
+const tokenRouter = require('../../backend-start/routes/tokenRoute');
+const profileRouter = require('../../backend-start/routes/profileSetter');
+const robustEmergencyRouter = require('../../backend-start/routes/robustEmergencyRoutes');
 
 class SecureServer {
     constructor() {

@@ -1,15 +1,18 @@
 const { AuthModelHandler } = require("../model/AuthModel");
-const otpGenerator = require('../utils/otpGenerator');
+// const otpGenerator = require('../../backend-start/utils/otpGenerator');
 const cryptoHasher = require('../utils/cryptoHasher');
 const randomStringGenerator = require('../utils/randomStringGenerator');
 const bcryptHasher = require('../utils/bcryptHasher');
 const bcryptCompare = require('../utils/bcryptCompare');
-const emailSendingService = require('./emailSendingService');
-const smsMessageSending = require('./smsMessageSending');
+const { emailSendingService } = require('./emailSendingService');
+// const smsMessageSending = require('../../backend-start/service/smsMessageSending');
 const TokenGenerationServiceHandler = require('./tokenGenerationService');
+const { EmergencyContactRelated } = require('../model/ProcessModel');
+const { UserRelated } = require('../model/ProcessModel');
 
 let authModelHandler = new AuthModelHandler();
 let tokenGenerationServiceHandler = new TokenGenerationServiceHandler();
+let fetchingProfileOnLogIn = new UserRelated();
 
 class AuthService {
     async signUp(sentInfo) {
@@ -23,7 +26,7 @@ class AuthService {
             // send the messages or email including links
 
 
-            let { fullname, email, phone, password, deviceIdentifier, role , birthDate } = sentInfo;
+            let { fullname, email, phone, password, deviceIdentifier, role, birthDate } = sentInfo;
             let otpHashed, otp, emailString, emailStringHashed;
             let passwordHashed = await bcryptHasher(password);
 
@@ -52,7 +55,7 @@ class AuthService {
                 }
             }
 
-            let emailPhoneUniqueCheckResult = await authModelHandler.emailPhoneDeviceIdUniqueCheck({ email, phone , deviceIdentifier});
+            let emailPhoneUniqueCheckResult = await authModelHandler.emailPhoneDeviceIdUniqueCheck({ email, phone, deviceIdentifier });
 
             if (!emailPhoneUniqueCheckResult.success) {
                 // means not unique
@@ -81,7 +84,7 @@ class AuthService {
                 console.log("Saving problem in pending user")
                 return {
                     success: false,
-                    reason : "Saving problem in pending user"
+                    reason: "Saving problem in pending user"
                 }
             }
 
@@ -99,9 +102,9 @@ class AuthService {
 
                 if (!res.success) {
                     console.log("Email sending failed");
-                    return { 
-                        success: false ,
-                        reason : "Error while sending email"
+                    return {
+                        success: false,
+                        reason: "Error while sending email"
                     };
                 }
             } else if (phone) {
@@ -109,9 +112,9 @@ class AuthService {
                 let res = await smsMessageSending({ phone, otp })
                 if (!res.success) {
                     console.log("SMS sending failed");
-                    return { 
-                        success: false ,
-                        reason : "Error while sending otp"
+                    return {
+                        success: false,
+                        reason: "Error while sending otp"
                     };
                 }
             }
@@ -235,6 +238,11 @@ class AuthService {
             }
 
             let { refreshToken } = refreshTokenResult;
+
+            console.log("Email verified successfully for user id ", {
+                accessToken,
+                refreshToken
+            });
             return {
                 success: true,
                 data: {
@@ -242,6 +250,7 @@ class AuthService {
                     refreshToken
                 }
             }
+
 
         } catch (err) {
             console.log("Error while AuthService.validateEmailLink ", err.message);
@@ -425,11 +434,18 @@ class AuthService {
             }
 
             let { refreshToken } = refreshTokenResult;
+
+            let userProfile = await fetchingProfileOnLogIn.getMyProfile(id);
+
+            if (!userProfile.success) {
+                console.log("The user is not found in profile");
+            }
             return {
                 success: true,
                 data: {
                     accessToken,
-                    refreshToken
+                    refreshToken,
+                    profile: userProfile.data
                 }
             }
         } catch (err) {

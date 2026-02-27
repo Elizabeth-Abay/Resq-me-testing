@@ -8,4 +8,7 @@ async function bcryptHasher(valToBeHashed) {
 }
 
 
+
+
+
 module.exports = bcryptHasher;

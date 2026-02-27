@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency_Contacts</title>
+</head>
+
+<body>
+    <div style="font-family: Arial, sans-serif; border: 2px solid #e74c3c; padding: 20px; border-radius: 10px;">
+        <h2 style="color: #e74c3c; margin-top: 0;">🚨 Emergency Status Update</h2>
+
+        <p>This is an automated alert from <strong>ResQMission</strong>.</p>
+
+        <p>We are notifying you that <strong><%= fullname%></strong> was involved in an emergency situation. Professional
+            medical help has arrived and is currently assisting them.</p>
+
+        <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #3498db; margin: 20px 0;">
+            <p style="margin: 0;"><strong>Medical Facility/Location:</strong></p>
+            <p style="margin: 5px 0;"><%= city %>, <%= sub_city%></p>
+            <p style="margin: 5px 0;"><em>Note: Near <%= identifying_landmark%></em></p>
+            <br>
+        </div>
+
+        <p style="font-size: 0.9em; color: #555;">
+            <strong>Next Steps:</strong> You may attempt to contact <%= fullname%>'s primary phone or proceed to the
+            location mentioned above. Please stay calm and keep this line open for further updates.
+        </p>
+
+        <hr style="border: 0; border-top: 1px solid #eee;">
+        <p style="font-size: 0.8em; color: #888;">Sent via ResQMission Emergency Response System.</p>
+    </div>
+
+</body>
+
+</html>

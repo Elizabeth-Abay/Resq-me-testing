@@ -1,29 +1,47 @@
-const sendEmail = require('../utils/emailSender');
+const sendRenderedEmail = require('../utils/sendRenderedEmail');
+//  to, subject, templateName , payload this is input req for sendRenderedEmail
 const dotenv = require('dotenv');
 const path = require('path');
 
 dotenv.config({
-    path: path.resolve(__dirname, '../../.env')
+    path : path.join(__dirname , '../.env')
 });
 
-let { EMAIL } = process.env;
+
+const { APP_URL} = process.env;
+
+
 
 async function emailSendingService(sentInfo) {
     try {
         const { email, emailString, userId } = sentInfo;
-        let emailLink = `https://resq-app-741m.onrender.com/auth/verify-email?userId=${userId}&tokenString=${emailString}`;
+        let emailLink = `${APP_URL}/auth/verify-email?userId=${userId}&tokenString=${emailString}`;
 
 
-        console.log("Sent email link", emailLink);
+        console.log("Sent email link bla bla bla", emailLink);
         // { to, subject, html }
 
-        let info = await sendEmail({
+        console.log("Email sending service received info ", {
             to: email,
             subject: "Verify your email",
-            html: `<p>Click on the link to verify your email: <a href="${emailLink}">Verify Email</a></p>`
+            templateName: 'authEmail',
+            payload: {
+                emailLink
+            }
         });
 
-        if (!info) {
+        let info = await sendRenderedEmail({
+            to: email,
+            subject: "Verify your email",
+            templateName: 'authEmail',
+            payload: {
+                emailLink
+            }
+        });
+
+        console.log(info)
+
+        if (!info.success) {
             return {
                 success: false
             }
@@ -45,33 +63,137 @@ async function emailSendingService(sentInfo) {
 
 
 
-async function notificationEmailConstructor({ email, userName, serviceProviderInfo }) {
-    let html = `
-        <h3>Hello</h3> 
-        <h4><p> We want to notify you that ${userName} has been reported to an accident. Help is on the way and the patient will first be admitted to ${serviceProviderInfo}</p></h4
-    `
+async function notificationEmailConstructor({ emails, fullname, city, sub_city, identifying_landmark }) {
+    try {
+        if (emails.length === 0) {
+            return {
+                success: false,
+                reason: "The emails are empty for notificationEmailConstructor"
+            }
+        }
+        let subject = "Notifying Accident";
+        let payload = { fullname, city, sub_city, identifying_landmark }
+
+        console.log("notificationEmailConstructor received info ", { emails, fullname, city, sub_city, identifying_landmark })
+
     
-    let subject = "Notifying Accident";
 
-    let emailSending = await sendEmail({
-        to : email,
-        subject,
-        html
-    })
+        let emailSending = await sendRenderedEmail({
+            templateName: 'notifyEmergContacts',
+            to: emails,
+            // emails = [  email ]
+            subject,
+            payload,
+            emailCase: "Emergency-Notification"
+        })
 
-    if (!emailSending){
+        if (!emailSending.success) {
+            return {
+                success: false
+            }
+        }
+
         return {
-            success : false
+            success: true
+        }
+
+    } catch (err) {
+        console.log("Error in notificationEmailConstructor ", err.message);
+        return {
+            success: false
         }
     }
-
-    return {
-        success : true
-    }
-
-    
-
 }
 
 
-module.exports = emailSendingService , notificationEmailConstructor;
+
+async function contactServiceProviders(sentInfo) {
+    try {
+        let { email, payload } = sentInfo;
+        let { location, healthState, allergies, distanceKm, emergency_id, providerId } = payload;
+
+
+        let allergyArray = [];
+
+        if (allergies && typeof allergies === 'object') {
+            // If it's already an array, just use it
+            if (Array.isArray(allergies)) {
+                allergyArray = allergies;
+            } else {
+                // If it's an object {"pollen": "high"}, turn it into ["pollen (high)"]
+                allergyArray = Object.entries(allergies).map(([key, value]) => {
+                    return `${key} (${value})`;
+                });
+            }
+        }
+
+
+
+
+        let healthSummaryArray = [];
+
+        if (healthState && typeof healthState === 'object' && !Array.isArray(healthState)) {
+            // Transform {"pulse": "80"} into ["Pulse: 80"]
+            healthSummaryArray = Object.entries(healthState).map(([key, value]) => {
+                // Clean up the key (e.g., 'blood_pressure' -> 'Blood Pressure')
+                const cleanKey = key.replace(/_/g, ' ')
+                    .replace(/\b\w/g, char => char.toUpperCase());
+                return `${cleanKey}: ${value}`;
+            });
+        } else if (Array.isArray(healthState)) {
+            healthSummaryArray = healthState;
+        }
+
+
+        // create acceptance link
+        let acceptanceLink = `${APP_URL}/reports/accept-request?report_id=${emergency_id}&provider_id=${providerId}`;
+        console.log("Acceptance link: ", acceptanceLink);
+
+        // Simple HTML email without templates
+
+
+        let attempts = 0;
+        const maxAttempts = 3;
+
+        while (attempts < maxAttempts) {
+            try {
+                let emailSending = await sendRenderedEmail({
+                    to: email,
+                    subject: "Emergency Alert - Patient Needs Help",
+                    templateName: "notifyProvider",
+                    payload: { location, healthState: healthSummaryArray, allergies: allergyArray, distanceKm, acceptanceLink }
+                });
+
+                if (emailSending && emailSending.success) {
+                    console.log(`Email sent successfully to ${email} on attempt ${attempts + 1}`);
+                    return { success: true };
+                } else {
+                    throw new Error("Email service returned failure");
+                }
+            } catch (error) {
+                attempts++;
+                console.log(`Email attempt ${attempts} failed for ${email}:`, error.message);
+
+                if (attempts >= maxAttempts) {
+                    console.log(`Failed to send to ${email} after ${maxAttempts} attempts`);
+                    return { success: false, reason: "Email delivery failed after retries" };
+                }
+
+                // Wait before retry: 1s, 2s, 3s
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
+            }
+        }
+
+        return { success: false, reason: "Email delivery failed" };
+
+    } catch (err) {
+        console.log("Error while contactServiceProviders ", err.message);
+        return {
+            success: false,
+            reason: "Error while contactServiceProviders "
+        }
+    }
+
+}
+
+module.exports = { emailSendingService, notificationEmailConstructor, contactServiceProviders };

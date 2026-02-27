@@ -3,13 +3,13 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const path = require('path');
 
-const randomStringGenerator = require('../utils/randomStringGenerator');
-const cryptoHasher = require('../utils/cryptoHasher');
-const tokenModel = require('../model/tokenModel');
+const randomStringGenerator = require('../../backend/utils/randomStringGenerator');
+const cryptoHasher = require('../../backend/utils/cryptoHasher');
+const tokenModel = require('../../backend/model/tokenModel');
 
 dotenv.config(
     {
-        path: path.resolve(__dirname, '../../.env')
+        path: path.join(__dirname, '../../.env')
     }
 )
 

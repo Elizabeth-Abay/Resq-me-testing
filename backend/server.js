@@ -1,29 +1,43 @@
-const authRouter = require('./routes/AuthRoute');
-const tokenRouter = require('./routes/tokenRoute');
-const profileRouter = require('./routes/profileSetter')
 const express = require('express');
 const cors = require('cors');
-const app = express();
 const dotenv = require('dotenv');
 const path = require('path');
+const EmergencyNotificationHandlerObj = require('./model/notifListener');
+const pool = require('./config/pgConnection');
+
+
+
+const authRouter = require('./routes/AuthRoute');
+const reportRoute = require('./routes/emergencyReport');
+const profileRelated = require('./routes/profileRelated');
+const tokenRoute = require('./routes/tokenRoute');
+const { ref } = require('process');
+
 
 dotenv.config({
-    path: path.resolve(__dirname, '../.env')
-})
-
-const { PORT } = process.env;
-
-
-app.use(express.json());
-app.use(cors({
-    origin: '*'
-}));
-app.use('/auth', authRouter);
-app.use('/token', tokenRouter);
-app.use('/profile', profileRouter)
-
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    path : path.join(__dirname , '../.env')
 });
 
-// we need to have a route that only service providers can have so that they will be able to list who they are partnering with 
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(cors({
+    origin : '*'
+}));
+
+app.use(express.json());
+
+// Routes - This is where your /api/reports lives
+app.use('/reports', reportRoute);
+app.use('/auth' , authRouter);
+app.use('/profile' ,profileRelated );
+app.use('/token' , tokenRoute);
+
+
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port: ${PORT}`);
+});
+
+
