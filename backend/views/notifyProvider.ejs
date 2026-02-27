@@ -1,57 +1,139 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <style>
-            .email-container { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
-            .header { background-color: #f8d7da; color: #721c24; padding: 20px; text-align: center; border-bottom: 2px solid #f5c6cb; }
-            .content { padding: 30px; line-height: 1.6; color: #333; }
-            .status-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; text-transform: uppercase; }
-            .critical { background-color: #dc3545; color: white; }
-            .medium { background-color: #ffc107; color: #212529; }
-            .data-section { background: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0; }
-            .label { font-weight: bold; color: #555; display: block; margin-bottom: 5px; }
-            .btn { display: block; width: 200px; margin: 30px auto; padding: 15px; background-color: #007bff; color: white !important; text-decoration: none; text-align: center; border-radius: 5px; font-weight: bold; }
-            .footer { font-size: 12px; color: #888; text-align: center; padding: 20px; }
-        </style>
-    </head>
-    <body>
-        <div class="email-container">
-            <div class="header">
-                <h1 style="margin:0;">Urgent Patient Admittance</h1>
-            </div>
 
-            <div class="content">
-                <p>A new patient request has been logged. Please review the clinical details below:</p>
+<head>
+    <style>
+        .email-container {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
 
-                <div class="data-section">
-                    <span class="label">Current Location:</span>
-                    <strong><%= location %></strong> (<%= distanceKm %> km away)
-                </div>
+        .header {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #f5c6cb;
+        }
 
-                
+        .content {
+            padding: 30px;
+            line-height: 1.6;
+            color: #333;
+        }
 
-                <div class="data-section">
-                    <span class="label">Health State Summary:</span>
-                    <ul style="margin: 5px 0; padding-left: 20px;">
-                        <% Object.entries(healthState).forEach(([key, value]) => { %>
-                            <li><strong><%= key %>:</strong> <%= value %></li>
-                        <% }); %>
-                    </ul>
-                </div>
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
 
-                <div class="data-section">
-                    <span class="label">Known Allergies:</span>
-                    <p style="margin:0; color: #d9534f;">
-                        <%= allergies && allergies.length > 0 ? allergies.join(', ') : 'No known allergies reported.' %>
-                    </p>
-                </div>
+        .critical {
+            background-color: #dc3545;
+            color: white;
+        }
 
-                <a href="<%= acceptanceLink %>" class="btn">Accept Admittance</a>
-            </div>
+        .medium {
+            background-color: #ffc107;
+            color: #212529;
+        }
 
-            <div class="footer">
-                This is an automated clinical alert for **ResQMission**. Please respond promptly to ensure patient safety.
-            </div>
+        .data-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #555;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .btn {
+            display: block;
+            width: 200px;
+            margin: 30px auto;
+            padding: 15px;
+            background-color: #007bff;
+            color: white !important;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .footer {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1 style="margin:0;">Urgent Patient Admittance</h1>
         </div>
-    </body>
+
+        <div class="content">
+            <p>A new patient request has been logged. Please review the clinical details below:</p>
+
+            <div class="data-section">
+                <span class="label">Current Location:</span>
+                <strong>
+                    <%= location %>
+                </strong> (<%= distanceKm %> km away)
+            </div>
+
+
+
+            <div class="data-section">
+                <span class="label">Health State Summary:</span>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <% Object.entries(healthState).forEach(([key, value])=> { %>
+                        <li><strong>
+                                <%= key %>:
+                            </strong>
+                            <%= value %>
+                        </li>
+                        <% }); %>
+                </ul>
+            </div>
+
+            <div class="data-section">
+                <span class="label">Known Allergies:</span>
+                <p style="margin:0; color: #d9534f;">
+                    <%# Object.entries converts {Key: Value} into [[Key, Value], [Key, Value]] %>
+                        <% Object.entries(allergies).forEach(([key, value])=> { %>
+                            <li>
+                                <strong>
+                                    <%= key %>:
+                                </strong>
+                                <%= value %>
+                            </li>
+                            <% }); %>
+                </p>
+            </div>
+
+            <a href="<%= acceptanceLink %>" class="btn">Accept Admittance</a>
+        </div>
+
+        <div class="footer">
+            This is an automated clinical alert for **ResQMission**. Please respond promptly to ensure patient safety.
+        </div>
+    </div>
+</body>
+
 </html>
