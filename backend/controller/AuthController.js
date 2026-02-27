@@ -1,4 +1,12 @@
 const SignUpServiceHandler = require('../service/AuthService');
+const dotenv = require('dotenv');
+const path = require('path');   
+
+dotenv.config({
+    path : path.join(__dirname , '../.env')
+}); 
+
+const { MOBILE_REDIRECT_URL } = process.env;
 
 let signUpServiceHandler = new SignUpServiceHandler();
 
@@ -46,6 +54,7 @@ class AuthController {
 
     async validateEmail(req, res) {
         try {
+            console.log("Received validateEmail request with params: ", req.validatedParams);
             let { userId, tokenString } = req.validatedParams;
             // bc this is a get request
             let result = await signUpServiceHandler.validateEmailLink({ userId, tokenString });
@@ -54,7 +63,7 @@ class AuthController {
                 let { accessToken, refreshToken } = result.data;
 
                 // redirect users to their app
-                const appUrl = `mycoolapp://verification-success?accessToken=${accessToken}&refreshToken=${refreshToken}`;
+                const appUrl = `${MOBILE_REDIRECT_URL}?accessToken=${accessToken}&refreshToken=${refreshToken}`;
 
                 return res.status(302).redirect(appUrl);
             } else {
