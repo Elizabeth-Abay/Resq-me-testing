@@ -183,7 +183,7 @@ class SecureServer {
         // API documentation endpoint
         this.app.get('/api', (req, res) => {
             res.json({
-                name: 'ResQMission API',
+                name: 'ResQMe API',
                 version: '1.0.0',
                 description: 'Emergency response system API',
                 endpoints: {

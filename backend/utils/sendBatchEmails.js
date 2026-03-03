@@ -4,7 +4,7 @@ async function sendToManyUsers({ to, subject, html }) {
     // 1. Map your array of emails into the format Resend expects
     console.log("sendToManyUsers called with: ", { to, subject, html });
     const batchData = to.map(email => ({
-        from: 'ResQMission <alerts@resqmeapp.win>',
+        from: 'ResQMe <alerts@resqmeapp.win>',
         to: email,
         subject,
         html,

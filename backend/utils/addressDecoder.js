@@ -22,7 +22,7 @@ async function getAddressFromCoords(lat, lon) {
             {
                 method: 'GET',
                 headers: {
-                    'User-Agent': 'ResQMission_Emergency_App_v1'
+                    'User-Agent': 'ResQMe_Emergency_App_v1'
                 }
             }
         );
