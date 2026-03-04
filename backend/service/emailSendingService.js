@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 const path = require('path');
 
 dotenv.config({
-    path : path.join(__dirname , '../.env')
+    path : path.join(__dirname , '../../.env')
 });
 
 
@@ -113,36 +113,7 @@ async function contactServiceProviders(sentInfo) {
         let { location, healthState, allergies, distanceKm, emergency_id, providerId } = payload;
 
 
-        let allergyArray = [];
-
-        if (allergies && typeof allergies === 'object') {
-            // If it's already an array, just use it
-            if (Array.isArray(allergies)) {
-                allergyArray = allergies;
-            } else {
-                // If it's an object {"pollen": "high"}, turn it into ["pollen (high)"]
-                allergyArray = Object.entries(allergies).map(([key, value]) => {
-                    return `${key} (${value})`;
-                });
-            }
-        }
-
-
-
-
-        let healthSummaryArray = [];
-
-        if (healthState && typeof healthState === 'object' && !Array.isArray(healthState)) {
-            // Transform {"pulse": "80"} into ["Pulse: 80"]
-            healthSummaryArray = Object.entries(healthState).map(([key, value]) => {
-                // Clean up the key (e.g., 'blood_pressure' -> 'Blood Pressure')
-                const cleanKey = key.replace(/_/g, ' ')
-                    .replace(/\b\w/g, char => char.toUpperCase());
-                return `${cleanKey}: ${value}`;
-            });
-        } else if (Array.isArray(healthState)) {
-            healthSummaryArray = healthState;
-        }
+        
 
 
         // create acceptance link
@@ -161,7 +132,7 @@ async function contactServiceProviders(sentInfo) {
                     to: email,
                     subject: "Emergency Alert - Patient Needs Help",
                     templateName: "notifyProvider",
-                    payload: { location, healthState: healthSummaryArray, allergies: allergyArray, distanceKm, acceptanceLink }
+                    payload: { location, healthState , allergies, distanceKm, acceptanceLink }
                 });
 
                 if (emailSending && emailSending.success) {

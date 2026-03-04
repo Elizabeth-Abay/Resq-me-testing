@@ -1,10 +1,11 @@
 const SignUpServiceHandler = require('../service/AuthService');
 const dotenv = require('dotenv');
-const path = require('path');
+
+const path = require('path');   
 
 dotenv.config({
-    path: path.resolve(__dirname, '../../.env')
-});
+    path : path.join(__dirname , '../.env')
+}); 
 
 const { MOBILE_REDIRECT_URL } = process.env;
 
@@ -56,6 +57,7 @@ class AuthController {
     // send the access and ref token through the redirect
     async validateEmail(req, res) {
         try {
+            console.log("Received validateEmail request with params: ", req.validatedParams);
             let { userId, tokenString } = req.validatedParams;
             // bc this is a get request
             let result = await signUpServiceHandler.validateEmailLink({ userId, tokenString });
