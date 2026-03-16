@@ -19,7 +19,10 @@ class EmergencyNotificationService {
             // this will be called to process the notification emitted by postgresql
             let { latitude, longitude, allergies, health_state, emergency_id } = emergencyData;
 
-            console.log(`Processing emergency request ${emergencyData.emergency_id}`);
+            emergencyData.allergies = allergies ? JSON.parse(allergies) : {};
+            emergencyData.health_state = health_state ? JSON.parse(health_state) : {};
+
+            console.log(`Processing emergency request ${emergencyData}`);
 
             let searchRadiusKm = 5;
             // first find nearby 5 km providers
