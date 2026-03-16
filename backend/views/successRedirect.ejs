@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+
+<body
+    style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif;">
+    <h2 style="color: #000080;">Login Successful!</h2>
+    <p>You can now return to the ResQMe app.</p>
+    <a href="${deepLink}"
+        style="padding: 15px 25px; background-color: #000080; color: white; border-radius: 8px; text-decoration: none; font-weight: bold;">
+        Open ResQMe App
+    </a>
+    <script>
+        // Optional: Try to auto-redirect after 2 seconds
+        setTimeout(() => { window.location.href = "${deepLink}"; }, 2000);
+    </script>
+</body>
+
+</html>

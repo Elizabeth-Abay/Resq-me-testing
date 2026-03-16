@@ -64,9 +64,10 @@ class AuthController {
                 let { accessToken, refreshToken } = result.data;
 
                 // redirect users to their app
-                const appUrl = `${MOBILE_REDIRECT_URL}?accessToken=${accessToken}&refreshToken=${refreshToken}`;
+                const deepLink = `${MOBILE_REDIRECT_URL}?accessToken=${accessToken}&refreshToken=${refreshToken}`;
 
-                return res.status(302).redirect(appUrl);
+
+                return res.render('successRedirect' , {deepLink});
             } else {
                 return res.status(400).json(result);
             }
