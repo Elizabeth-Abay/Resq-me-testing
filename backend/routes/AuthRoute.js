@@ -13,7 +13,7 @@ let authController = new AuthController();
 
 authRouter.post('/sign-up', signUpInputValidator, authController.signUp); // checked
 authRouter.get('/verify-email', emailInputValidator, authController.validateEmail); // checked
-authRouter.get('/resend-email-verification-link', resendEmailValidator, authController.resendEmailVerificationLink); // test it
+authRouter.get('/resend-verification', resendEmailValidator, authController.resendEmailVerificationLink); // test it
 authRouter.post('/log-in' , logInValidator , authController.logIn); // checked
 authRouter.post('/log-out' , refreshValidator  , logOutValidator , authController.logOut); // checked
 
