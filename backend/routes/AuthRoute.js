@@ -2,7 +2,7 @@ const express = require("express");
 
 let authRouter = express.Router();
 const AuthController = require('../controller/AuthController');
-const { signUpInputValidator,otpInputValidator,resendOtpValidator,logOutValidator,emailInputValidator,resendEmailValidator,logInValidator } = require('../middleware/JoiValidatorMiddleware');
+const { signUpInputValidator,otpInputValidator,resendOtpValidator,logOutValidator,emailInputValidator,resendEmailValidator,logInValidator, checkPendingExistAndResendValidator } = require('../middleware/JoiValidatorMiddleware');
 const { refreshValidator } = require('../middleware/TokenValdiator');
 
 let authController = new AuthController();
@@ -13,7 +13,7 @@ let authController = new AuthController();
 
 authRouter.post('/sign-up', signUpInputValidator, authController.signUp); // checked
 authRouter.get('/verify-email', emailInputValidator, authController.validateEmail); // checked
-authRouter.get('/resend-verification', resendEmailValidator, authController.resendEmailVerificationLink); // test it
+authRouter.post('/resend-verification', checkPendingExistAndResendValidator, authController.resendEmailVerificationViaEmail); // new route for Flutter
 authRouter.post('/log-in' , logInValidator , authController.logIn); // checked
 authRouter.post('/log-out' , refreshValidator  , logOutValidator , authController.logOut); // checked
 

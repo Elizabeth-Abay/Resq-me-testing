@@ -270,6 +270,30 @@ class AuthModelHandler {
         }
     }
 
+    async findPendingUserByEmail(email) {
+        try {
+            let query = `SELECT id FROM pending_users WHERE email = $1`;
+            let values = [email];
+
+            let result = await pool.query(query, values);
+
+            if (result.rows.length > 0) {
+                return {
+                    success: true,
+                    userId: result.rows[0].id
+                }
+            }
+            return {
+                success: false
+            }
+
+        } catch (err) {
+            console.log("Error in AuthModelHandler.findPendingUserByEmail ", err.message)
+            return {
+                success: false
+            }
+        }
+    }
 
     async deletePendingUser(pendingUserId) {
         try {

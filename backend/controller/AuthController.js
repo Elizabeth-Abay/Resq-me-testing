@@ -98,8 +98,9 @@ class AuthController {
 
     async resendEmailVerificationLink(req, res) {
         try {
-            let { userId } = req.validatedParams;
-            let result = await signUpServiceHandler.resendEmail(userId);
+            // let { userId } = req.validatedParams;
+            let { email } = req.validatedBody;
+            let result = await signUpServiceHandler.resendEmail(email);
 
             if (result.success) {
                 return res.status(200).json({ message: "Email verification link resent successfully" });
@@ -108,6 +109,22 @@ class AuthController {
             }
         } catch (err) {
             console.log("Error while AuthController.resendEmailVerificationLink ", err.message);
+            return res.status(500).json({ message: "Internal Server Error" });
+        }
+    }
+
+    async resendEmailVerificationViaEmail(req, res) {
+        try {
+            let { email } = req.validatedBody;
+            let result = await signUpServiceHandler.checkPendingExistAndResend(email);
+
+            if (result.success) {
+                return res.status(200).json({ message: "Email verification link resent successfully" });
+            } else {
+                return res.status(400).json(result);
+            }
+        } catch (err) {
+            console.log("Error while AuthController.resendEmailVerificationViaEmail ", err.message);
             return res.status(500).json({ message: "Internal Server Error" });
         }
     }

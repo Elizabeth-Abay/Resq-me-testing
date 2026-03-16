@@ -197,6 +197,7 @@ class AuthService {
             let { tokenString, userId } = sentInfo;
 
             let emailStringHashed = cryptoHasher(tokenString);
+            // the token hashed
 
             let result = await authModelHandler.emailVerification({ userId });
 
@@ -336,6 +337,31 @@ class AuthService {
 
         } catch (err) {
             console.log("Error while AuthService.resendEmail ", err.message);
+            return {
+                success: false
+            }
+        }
+    }
+
+    async checkPendingExistAndResend(email) {
+        try {
+            // Find user by email in pending users
+            let result = await authModelHandler.findPendingUserByEmail(email);
+
+            if (!result.success) {
+                return {
+                    success: false,
+                    reason: "User not found or already verified"
+                }
+            }
+
+            let userId = result.userId;
+            
+            // Call the existing resendEmail method
+            return await this.resendEmail(userId);
+
+        } catch (err) {
+            console.log("Error while AuthService.checkPendingExistAndResend ", err.message);
             return {
                 success: false
             }

@@ -64,7 +64,14 @@ let resendOtpSchema = Joi.object(
 
 let resendEmailSchema = Joi.object(
     {
-        userId: Joi.string().uuid({ version: 'uuidv4' }).trim().required()
+        email : Joi.email().trim().required()
+    },
+    { abortEarly: false }
+)
+
+let checkPendingExistAndResendSchema = Joi.object(
+    {
+        email: Joi.string().email().trim().required()
     },
     { abortEarly: false }
 )
@@ -108,5 +115,6 @@ module.exports = {
     logOutSchema,
     emailInputSchema,
     resendEmailSchema,
+    checkPendingExistAndResendSchema,
     logInSchema
 }
