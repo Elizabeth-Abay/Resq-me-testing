@@ -5,7 +5,7 @@ let signUpInputValidator = valiatoreCreator(signUpInputSchema);
 let otpInputValidator = valiatoreCreator(otpInputSchema);
 let resendOtpValidator = validatorForParams(resendOtpSchema);
 let logOutValidator = valiatoreCreator(logOutSchema);
-
+let resendEmailValidator = (resendEmailSchema);
 let emailInputValidator = validatorForParams(emailInputSchema);
 let checkPendingExistAndResendValidator = valiatoreCreator(resendEmailSchema);
 let logInValidator = valiatoreCreator(logInSchema);
