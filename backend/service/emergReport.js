@@ -121,9 +121,7 @@ class User {
             // first transcribe
             if (audioBuffer) {
                 console.log("Audio buffer received, starting transcription...", audioBuffer);
-                if (!audioBuffer) {
-                    // make the request directly and notify criticality
-                }
+
                 let sentToAI = await this.sendToAI({ audioBuffer, userId });
 
                 if (!sentToAI.success) {
@@ -162,6 +160,22 @@ class User {
                     success: false,
                     reason: "Error while putting info into a report table"
                 }
+            } else {
+                // if there is no audio immediately make the report
+                let puttingIntoTable = await this.putIntoTable({ severity: 'medium', userId, latitude, longitude });
+                if (puttingIntoTable.success) {
+                    return {
+                        success: true,
+                        message: "A service provider will be contacted Immediately",
+                        firstAid: first_aid_steps
+                    }
+                }
+
+                return {
+                    success : false,
+                    reason : "Error while putting info into a report table"
+                }
+
             }
         } catch (Err) {
             console.log("Error while ReportEmergency.makeRequest", Err.message);

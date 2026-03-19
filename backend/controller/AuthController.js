@@ -67,6 +67,7 @@ class AuthController {
 
                 // redirect users to their app
                 // const deepLink = `${MOBILE_REDIRECT_URL}?accessToken=${accessToken}&refreshToken=${refreshToken}`;
+                // the actual thing
 
                 const deepLink = `resqme://auth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`;
 
