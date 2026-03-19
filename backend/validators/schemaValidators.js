@@ -64,7 +64,7 @@ let resendOtpSchema = Joi.object(
 
 let resendEmailSchema = Joi.object(
     {
-        email : Joi.email().trim().required()
+        email: Joi.string().email().trim().required()
     },
     { abortEarly: false }
 )
