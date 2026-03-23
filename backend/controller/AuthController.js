@@ -77,7 +77,7 @@ class AuthController {
             }
         } catch (err) {
             console.log("Error while AuthController.validateEmail ", err.message);
-            return res.status(500).json({ message: err.message });
+            return res.status(500).json({ message: "Internal Server Error" });
         }
     }
 
