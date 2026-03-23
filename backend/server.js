@@ -34,10 +34,29 @@ app.use('/auth' , authRouter);
 app.use('/profile' ,profileRelated );
 app.use('/token' , tokenRoute);
 
+app.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'OK', 
+        message: 'Server is running',
+        timestamp: new Date().toISOString(),
+        routes: {
+            auth: {
+                'POST /auth/sign-up': 'User registration',
+                'POST /auth/log-in': 'User login', 
+                'GET /auth/verify-email': 'Email verification (deep link)',
+                'POST /auth/resend-verification': 'Resend verification via email',
+                'GET /auth/resend-verification': 'Resend verification via userId',
+                'POST /auth/log-out': 'User logout'
+            }
+        }
+    });
+});
+
 
 
 app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);
+    console.log("App is up and running");
 });
 
 
