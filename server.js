@@ -2,15 +2,15 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
-const EmergencyNotificationHandlerObj = require('./model/notifListener');
-const pool = require('./config/pgConnection');
+const EmergencyNotificationHandlerObj = require('./backend/model/notifListener');
+const pool = require('./backend/config/pgConnection');
 
 
 
-const authRouter = require('./routes/AuthRoute');
-const reportRoute = require('./routes/emergencyReport');
-const profileRelated = require('./routes/profileRelated');
-const tokenRoute = require('./routes/tokenRoute');
+const authRouter = require('./backend/routes/AuthRoute');
+const reportRoute = require('./backend/routes/emergencyReport');
+const profileRelated = require('./backend/routes/profileRelated');
+const tokenRoute = require('./backend/routes/tokenRoute');
 const { ref } = require('process');
 
 
